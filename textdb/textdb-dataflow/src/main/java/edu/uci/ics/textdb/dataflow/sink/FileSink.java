@@ -16,10 +16,23 @@ public class FileSink extends AbstractSink {
 
     private PrintWriter printWriter;
     private final File file;
-
+    private TupleToString toStringFunc;
+    
+    @FunctionalInterface
+    public static interface TupleToString {
+    	String convertToString(ITuple tuple);
+    }
+    
     public FileSink(IOperator childOperator, File file) throws FileNotFoundException {
         super(childOperator);
         this.file = file;
+        this.toStringFunc = null;
+    }
+
+    public FileSink(IOperator childOperator, File file, TupleToString toStringFunc) throws FileNotFoundException {
+        super(childOperator);
+        this.file = file;
+        this.toStringFunc = toStringFunc;
     }
 
     @Override
@@ -38,6 +51,10 @@ public class FileSink extends AbstractSink {
 
     @Override
     protected void processOneTuple(ITuple nextTuple) {
-        printWriter.write(nextTuple.toString());
+    	if (this.toStringFunc == null) {
+            printWriter.write(nextTuple.toString());
+    	} else {
+            printWriter.write(toStringFunc.convertToString(nextTuple));
+    	}
     }
 }
