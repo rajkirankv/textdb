@@ -84,7 +84,7 @@ public class ZikaAttempt {
 		
 		IndexSink indexSinkStandard = new IndexSink(keywordMatcher, filteredStandardIndexPath, ZikaSchema.PromedMail_Schema, new StandardAnalyzer());
 		Plan filterZikaPlanStandard = new Plan(indexSinkStandard);
-		IndexSink indexSinkTrigram = new IndexSink(keywordMatcher, filteredStandardIndexPath, ZikaSchema.PromedMail_Schema, new StandardAnalyzer());
+		IndexSink indexSinkTrigram = new IndexSink(keywordMatcher, filteredTrigramIndexPath, ZikaSchema.PromedMail_Schema, new StandardAnalyzer());
 		Plan filterZikaPlanTrigram = new Plan(indexSinkTrigram);
 		
 		Engine.getEngine().evaluate(filterZikaPlanStandard);
@@ -93,7 +93,7 @@ public class ZikaAttempt {
 	
 	
 	public static void extractPerson() throws Exception {
-		String personRegex = "zika";
+		String personRegex = "(A|a|(an)|(An)) .{1,40} ((woman)|(man))";
 		RegexPredicate regexPredicate = new RegexPredicate(personRegex, 
 				new DataStore(trigramIndexPath, ZikaSchema.PromedMail_Schema), 
 				Arrays.asList(ZikaSchema.CONTENT_ATTR), 
