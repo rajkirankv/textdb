@@ -26,6 +26,7 @@ import edu.uci.ics.textdb.dataflow.sink.IndexSink;
 import edu.uci.ics.textdb.dataflow.source.IndexBasedSourceOperator;
 import edu.uci.ics.textdb.dataflow.source.IterableSourceOperator;
 import edu.uci.ics.textdb.engine.Engine;
+import edu.uci.ics.textdb.perftest.utils.PerfTestUtils;
 import edu.uci.ics.textdb.storage.DataStore;
 
 public class ZikaAttempt {
@@ -97,7 +98,8 @@ public class ZikaAttempt {
                 DataConstants.getTrigramAnalyzer());
         RegexMatcher regexMatcher = new RegexMatcher(regexPredicate);
 
-        FileSink fileSink = new FileSink(regexMatcher, new File("./data-files/results/PromedMail/result_8_5_1042.txt"),
+        FileSink fileSink = new FileSink(regexMatcher, 
+                new File("./data-files/results/PromedMail/result"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
                 (tuple -> Utils.getTupleString(tuple)));
 
         keywordMatcher.setInputOperator(indexSource);
@@ -107,5 +109,7 @@ public class ZikaAttempt {
         Engine.getEngine().evaluate(extractPersonPlan);
 
     }
+    
+    
 
 }
