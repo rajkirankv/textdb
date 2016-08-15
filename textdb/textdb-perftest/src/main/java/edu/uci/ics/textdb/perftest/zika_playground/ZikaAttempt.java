@@ -33,11 +33,7 @@ public class ZikaAttempt {
 
     private static String standardIndexPath = "./index/testindex/promed/standard/";
     private static String trigramIndexPath = "./index/testindex/promed/trigram/";
-
-    private static String filteredStandardIndexPath = "./index/testindex/promed_filtered/standard/";
-    private static String filteredTrigramIndexPath = "./index/testindex/promed_filtered/trigram/";
-
-
+    
     public static void main(String[] args) throws Exception {
         // writeIndex();
         System.out.println("start");
