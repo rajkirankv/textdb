@@ -21,7 +21,10 @@ public class ZikaSchema {
 	public static Schema PromedMail_Schema = new Schema(new Attribute[]{CONTENT_ATTR});
 	
 	public static Plan writeIndexPlan(String filePath, String indexPath) {
-		FileSourceOperator fileSource = new FileSourceOperator(filePath, (x -> new DataTuple(PromedMail_Schema, new IField[]{new TextField(x)})));
+		FileSourceOperator fileSource = new FileSourceOperator(
+		        filePath, 
+		        (x -> new DataTuple(PromedMail_Schema, new IField[]{new TextField(x)})),
+		        ZikaSchema.PromedMail_Schema);
 		IndexSink sink = new IndexSink(fileSource, indexPath, PromedMail_Schema, new StandardAnalyzer());
 		Plan plan = new Plan(sink);
 		return plan;
