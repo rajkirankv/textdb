@@ -14,7 +14,9 @@ import edu.uci.ics.textdb.api.common.IField;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
+import edu.uci.ics.textdb.api.dataflow.ISourceOperator;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
+import edu.uci.ics.textdb.common.exception.ErrorMessages;
 import edu.uci.ics.textdb.common.field.Span;
 import edu.uci.ics.textdb.common.utils.Utils;
 
@@ -39,15 +41,15 @@ import edu.uci.ics.textdb.common.utils.Utils;
 
 public class NlpExtractor implements IOperator {
 
-
-    private IOperator sourceOperator;
+    private IOperator inputOperator;
     private List<Attribute> searchInAttributes;
     private ITuple sourceTuple;
     private Schema returnSchema;
     private NlpTokenType inputNlpTokenType = null;
     private String nlpTypeIndicator = null;
-    private int limit = Integer.MAX_VALUE;
+    private int limit;
     private int cursor;
+    private int offset;
 
 
     /**
@@ -89,7 +91,10 @@ public class NlpExtractor implements IOperator {
     public NlpExtractor(IOperator operator, List<Attribute>
             searchInAttributes, NlpTokenType inputNlpTokenType)
             throws DataFlowException {
-        this.sourceOperator = operator;
+        this.cursor = -1;
+        this.limit = Integer.MAX_VALUE;
+        this.offset = 0;
+        this.inputOperator = operator;
         this.searchInAttributes = searchInAttributes;
         this.inputNlpTokenType = inputNlpTokenType;
         if (NlpTokenType.isPOSTokenType(inputNlpTokenType)) {
@@ -102,9 +107,11 @@ public class NlpExtractor implements IOperator {
 
     @Override
     public void open() throws Exception {
+    	if (this.inputOperator == null) {
+    		throw new DataFlowException(ErrorMessages.INPUT_OPERATOR_NOT_SPECIFIED);
+    	}
         try {
-        	cursor = 0;
-            sourceOperator.open();
+            inputOperator.open();
             returnSchema = null;
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,36 +131,54 @@ public class NlpExtractor implements IOperator {
      */
     @Override
     public ITuple getNextTuple() throws Exception {
-    	if (cursor >= limit){
+    	if (limit == 0 || cursor >= limit + offset - 1){
     		return null;
     	}
-        sourceTuple = sourceOperator.getNextTuple();
-        if (sourceTuple == null) {
-            return null;
-        } else {
-            if (returnSchema == null) {
-                returnSchema = Utils.createSpanSchema(sourceTuple.getSchema());
-            }
-            List<Span> spanList = new ArrayList<>();
-            for (Attribute attribute : searchInAttributes) {
-                String fieldName = attribute.getFieldName();
-                IField field = sourceTuple.getField(fieldName);
-                spanList.addAll(extractNlpSpans(field, fieldName));
-            }
-            ITuple returnTuple = Utils.getSpanTuple(sourceTuple.getFields(),
-                    spanList, returnSchema);
-            cursor++;
-            return returnTuple;
-        }
+    	ITuple sourceTuple;
+    	ITuple returnTuple = null;
+    	while ((sourceTuple = inputOperator.getNextTuple()) != null){
+	        returnTuple = computeMatchingResult(sourceTuple);
+	        
+	        if (returnTuple != null){
+	        	cursor++;
+	        }
+	        if (cursor >= offset){
+	        	break;
+	        }
+    	}
+    	return returnTuple;
     }
     
-    public void setLimit(int limit){
+    private ITuple computeMatchingResult(ITuple sourceTuple) {
+    	if (returnSchema == null){
+    		returnSchema = Utils.createSpanSchema(sourceTuple.getSchema());
+    	}
+        List<Span> spanList = new ArrayList<>();
+        for (Attribute attribute : searchInAttributes) {
+            String fieldName = attribute.getFieldName();
+            IField field = sourceTuple.getField(fieldName);
+            spanList.addAll(extractNlpSpans(field, fieldName));
+        }
+        return Utils.getSpanTuple(sourceTuple.getFields(),
+                spanList, returnSchema);
+    }
+    
+    public void setLimit(int limit) {
     	this.limit = limit;
     }
     
-    public int getLimit(){
+    public int getLimit() {
     	return this.limit;
     }
+    
+    public void setOffset(int offset) {
+    	this.offset = offset;
+    }
+    
+    public int getOffset() {
+    	return this.offset;
+    }
+    
 
     /**
      * @param iField
@@ -369,10 +394,26 @@ public class NlpExtractor implements IOperator {
             searchInAttributes = null;
             sourceTuple = null;
             returnSchema = null;
-            sourceOperator.close();
+        	if (inputOperator != null) {
+                inputOperator.close();
+        	}
         } catch (Exception e) {
             e.printStackTrace();
             throw new DataFlowException(e.getMessage(), e);
         }
+    }
+    
+    public IOperator getInputOperator() {
+		return inputOperator;
+	}
+
+	public void setInputOperator(ISourceOperator inputOperator) {
+		this.inputOperator = inputOperator;
+	}
+
+
+    @Override
+    public Schema getOutputSchema() {
+        return returnSchema;
     }
 }
