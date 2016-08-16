@@ -3,6 +3,7 @@ package edu.uci.ics.textdb.perftest.zika_playground;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -14,12 +15,16 @@ import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.api.dataflow.ISourceOperator;
 import edu.uci.ics.textdb.api.plan.Plan;
 import edu.uci.ics.textdb.common.constants.DataConstants;
+import edu.uci.ics.textdb.common.constants.SchemaConstants;
 import edu.uci.ics.textdb.common.field.DataTuple;
+import edu.uci.ics.textdb.common.field.IntegerField;
 import edu.uci.ics.textdb.common.field.TextField;
 import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
+import edu.uci.ics.textdb.dataflow.projection.ProjectionOperator;
+import edu.uci.ics.textdb.dataflow.projection.ProjectionPredicate;
 import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
 import edu.uci.ics.textdb.dataflow.sink.FileSink;
 import edu.uci.ics.textdb.dataflow.sink.IndexSink;
@@ -34,8 +39,10 @@ public class ZikaAttempt {
     private static String standardIndexPath = "./index/testindex/promed/standard/";
     private static String trigramIndexPath = "./index/testindex/promed/trigram/";
     
+    private static int idCounter = 0;
+    
     public static void main(String[] args) throws Exception {
-        // writeIndex();
+//         writeIndex();
         System.out.println("start");
         extractPerson();
         System.out.println("end");
@@ -45,7 +52,8 @@ public class ZikaAttempt {
     public static ITuple parsePromedHTML(String content) throws Exception {
         Document parsedDocument = Jsoup.parse(content);
         String mainText = parsedDocument.getElementById("preview").text();
-        ITuple tuple = new DataTuple(ZikaSchema.PromedMail_Schema, new TextField(mainText));
+        ITuple tuple = new DataTuple(ZikaSchema.PromedMail_Schema, new IntegerField(idCounter), new TextField(mainText));
+        idCounter++;
         return tuple;
     }
 
@@ -93,6 +101,11 @@ public class ZikaAttempt {
         RegexPredicate regexPredicate = new RegexPredicate(personRegex, Arrays.asList(ZikaSchema.CONTENT_ATTR),
                 DataConstants.getTrigramAnalyzer());
         RegexMatcher regexMatcher = new RegexMatcher(regexPredicate);
+        
+        List<String> projectionFields = new ArrayList<String>(
+                Arrays.asList(ZikaSchema.ID, SchemaConstants.SPAN_LIST));
+        ProjectionPredicate projectionPredicate = new ProjectionPredicate(projectionFields);
+        ProjectionOperator projectionOperator = new ProjectionOperator(projectionPredicate);
 
         FileSink fileSink = new FileSink(regexMatcher, 
                 new File("./data-files/results/PromedMail/result"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
@@ -100,7 +113,8 @@ public class ZikaAttempt {
 
         keywordMatcher.setInputOperator(indexSource);
         regexMatcher.setInputOperator(keywordMatcher);
-        fileSink.setInputOperator(regexMatcher);
+        projectionOperator.setInputOperator(regexMatcher);
+        fileSink.setInputOperator(projectionOperator);
         Plan extractPersonPlan = new Plan(fileSink);
         Engine.getEngine().evaluate(extractPersonPlan);
 
