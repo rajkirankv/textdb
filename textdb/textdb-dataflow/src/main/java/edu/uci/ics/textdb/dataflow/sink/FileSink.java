@@ -43,7 +43,7 @@ public class FileSink extends AbstractSink {
 
     @Override
     public void close() throws Exception {
-        if (this.printWriter != null){
+        if (this.printWriter != null) {
             this.printWriter.close();
         }
         super.close();
