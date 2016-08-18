@@ -67,6 +67,10 @@ public class Join implements IOperator {
         this.innerOperator = innerOperator;
         this.joinPredicate = joinPredicate;
     }
+    
+    public Join(JoinPredicate joinPredicate) {
+        this.joinPredicate = joinPredicate;
+    }
 
     @Override
     public void open() throws Exception, DataFlowException {
@@ -76,7 +80,6 @@ public class Join implements IOperator {
         }
 
         try {
-            outerOperator.open();
             innerOperator.open();
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,6 +97,7 @@ public class Join implements IOperator {
         // loaded into memory.
         try {
             innerOperator.close();
+            outerOperator.open();
         } catch (Exception e) {
             e.printStackTrace();
             throw new DataFlowException(e.getMessage(), e);
@@ -270,6 +274,14 @@ public class Join implements IOperator {
         nextTuple = new DataTuple(schema, nextTupleField);
 
         return nextTuple;
+    }
+    
+    public void setInnerInputOperator(IOperator innerInputOperator) {
+        this.innerOperator = innerInputOperator;
+    }
+    
+    public void setOuterInputOperator(IOperator outerInputOperator) {
+        this.outerOperator = outerInputOperator;
     }
 
     @Override

@@ -68,12 +68,12 @@ public class RegexMatcher implements IOperator {
 
         // try Java Regex first
         try {
-            this.javaPattern = java.util.regex.Pattern.compile(regex);
+            this.javaPattern = java.util.regex.Pattern.compile(regex, java.util.regex.Pattern.CASE_INSENSITIVE);
             this.regexEngine = RegexEngine.JavaRegex;
             // if Java Regex fails, try RE2J
         } catch (java.util.regex.PatternSyntaxException javaException) {
             try {
-                this.re2jPattern = com.google.re2j.Pattern.compile(regexPredicate.getRegex());
+                this.re2jPattern = com.google.re2j.Pattern.compile(regexPredicate.getRegex(), com.google.re2j.Pattern.CASE_INSENSITIVE);
                 this.regexEngine = RegexEngine.RE2J;
                 // if RE2J also fails, throw exception
             } catch (com.google.re2j.PatternSyntaxException re2jException) {

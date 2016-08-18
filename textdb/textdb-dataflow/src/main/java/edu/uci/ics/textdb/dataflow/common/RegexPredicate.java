@@ -45,18 +45,18 @@ public class RegexPredicate implements IPredicate {
                 .map(attr -> attr.getFieldName()).collect(Collectors.toList());
 
         // Try to apply translator. If it fails, use scan query.
-        try {
-            queryString = RegexToGramQueryTranslator.translate(regex).getLuceneQueryString();
-        } catch (com.google.re2j.PatternSyntaxException e) {
-            queryString = DataConstants.SCAN_QUERY;
-        }
-
-        try {
-            luceneQuery = generateLuceneQuery(fieldNameList, queryString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new DataFlowException(e.getMessage(), e);
-        }
+//        try {
+//            queryString = RegexToGramQueryTranslator.translate(regex).getLuceneQueryString();
+//        } catch (com.google.re2j.PatternSyntaxException e) {
+//            queryString = DataConstants.SCAN_QUERY;
+//        }
+//
+//        try {
+//            luceneQuery = generateLuceneQuery(fieldNameList, queryString);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            throw new DataFlowException(e.getMessage(), e);
+//        }
 
     }
 

@@ -23,6 +23,12 @@ public class FileSink extends AbstractSink {
     	String convertToString(ITuple tuple);
     }
     
+    public FileSink(File file, TupleToString toStringFunc) throws FileNotFoundException {
+        super(null);
+        this.file = file;
+        this.toStringFunc = toStringFunc;
+    }
+    
     public FileSink(IOperator childOperator, File file) throws FileNotFoundException {
         super(childOperator);
         this.file = file;
