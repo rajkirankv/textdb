@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import edu.uci.ics.textdb.api.common.ITuple;
+import edu.uci.ics.textdb.api.dataflow.IConnector;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.api.dataflow.ISourceOperator;
 import edu.uci.ics.textdb.api.plan.Plan;
@@ -22,6 +23,7 @@ import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.common.JoinPredicate;
 import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
+import edu.uci.ics.textdb.dataflow.connector.OneToNBroadcastConnector;
 import edu.uci.ics.textdb.dataflow.join.Join;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 import edu.uci.ics.textdb.dataflow.nlpextrator.NlpExtractor;
@@ -270,7 +272,8 @@ public class ZikaAttempt {
         ProjectionOperator projectionOperatorIdAndContent1 = new ProjectionOperator(projectionPredicateIdAndContent);
         ProjectionOperator projectionOperatorIdAndContent2 = new ProjectionOperator(projectionPredicateIdAndContent);
         ProjectionOperator projectionOperatorIdAndContent3 = new ProjectionOperator(projectionPredicateIdAndContent);
-
+        
+        OneToNBroadcastConnector keywordToProjectionConnector = new OneToNBroadcastConnector(3);
 
         String regexPerson = "\\b(woman)|(man)|(patient)\\b";
         RegexPredicate regexPredicatePerson = new RegexPredicate(regexPerson, Arrays.asList(ZikaSchema.CONTENT_ATTR),
@@ -280,88 +283,29 @@ public class ZikaAttempt {
         NlpPredicate nlpPredicateLocation = new NlpPredicate(NlpPredicate.NlpTokenType.Location, Arrays.asList(ZikaSchema.CONTENT_ATTR));
         NlpExtractor nlpExtractorLocation = new NlpExtractor(nlpPredicateLocation);
         
-        NlpPredicate nlpPredicateDate = new NlpPredicate(NlpPredicate.NlpTokenType.Date, Arrays.asList(ZikaSchema.CONTENT_ATTR));
-        NlpExtractor nlpExtractorDate = new NlpExtractor(nlpPredicateDate);
-    
-        JoinPredicate joinPredicatePersonLocation = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
-        Join joinPersonLocation = new Join(joinPredicatePersonLocation);
-        
-        JoinPredicate joinPredicatePersonLocationDate = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
-        Join joinPersonLocationDate = new Join(joinPredicatePersonLocationDate);
-        
-        ProjectionPredicate projectionPredicateIdAndSpan = new ProjectionPredicate(
-                Arrays.asList(ZikaSchema.ID, SchemaConstants.SPAN_LIST));
-        ProjectionOperator projectionOperatorIdAndSpan = new ProjectionOperator(projectionPredicateIdAndSpan);
-
-        FileSink fileSink = new FileSink( 
-                new File("./data-files/results/PromedMail/date-person-location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
-                (tuple -> Utils.getTupleString(tuple)));
-        
-        
-        keywordMatcherZika.setInputOperator(indexSource);
-        projectionOperatorIdAndContent1.setInputOperator(keywordMatcherZika);
-        
-        regexMatcherPerson.setInputOperator(projectionOperatorIdAndContent1);
-        
-        projectionOperatorIdAndContent2.setInputOperator(regexMatcherPerson);
-        nlpExtractorLocation.setInputOperator(projectionOperatorIdAndContent2);
-        
-        joinPersonLocation.setInnerInputOperator(regexMatcherPerson);
-        joinPersonLocation.setOuterInputOperator(nlpExtractorLocation);
-        
-        projectionOperatorIdAndContent3.setInputOperator(joinPersonLocation);
-        nlpExtractorDate.setInputOperator(projectionOperatorIdAndContent3); 
-        
-        joinPersonLocationDate.setInnerInputOperator(nlpExtractorDate);
-        joinPersonLocationDate.setOuterInputOperator(joinPersonLocation);
-              
-        projectionOperatorIdAndSpan.setInputOperator(joinPersonLocationDate);
-        fileSink.setInputOperator(projectionOperatorIdAndSpan);
-        
-        Plan extractPersonPlan = new Plan(fileSink);
-        Engine.getEngine().evaluate(extractPersonPlan);
-    }
-    
-    public static void extractPersonLocationDate3() throws Exception {
-        String keywordZika = "zika";
-        KeywordPredicate keywordPredicateZika = new KeywordPredicate(keywordZika, Arrays.asList(ZikaSchema.CONTENT_ATTR),
-                new StandardAnalyzer(), DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
-
-        IOperator indexSource = new IndexBasedSourceOperator(keywordPredicateZika
-                .generateDataReaderPredicate(new DataStore(standardIndexPath, ZikaSchema.PromedMail_Schema)));
-        
-        KeywordMatcher keywordMatcherZika = new KeywordMatcher(keywordPredicateZika);
-        
-        ProjectionPredicate projectionPredicateIdAndContent = new ProjectionPredicate(
-                Arrays.asList(ZikaSchema.ID, ZikaSchema.CONTENT));
-        
-        ProjectionOperator projectionOperatorIdAndContent1 = new ProjectionOperator(projectionPredicateIdAndContent);
-        ProjectionOperator projectionOperatorIdAndContent2 = new ProjectionOperator(projectionPredicateIdAndContent);
-        ProjectionOperator projectionOperatorIdAndContent3 = new ProjectionOperator(projectionPredicateIdAndContent);
-
-
-        String regexPerson = "\\b(A|a|(an)|(An)) .{1,40} ((woman)|(man))\\b";
-        RegexPredicate regexPredicatePerson = new RegexPredicate(regexPerson, Arrays.asList(ZikaSchema.CONTENT_ATTR),
-                DataConstants.getTrigramAnalyzer());
-        RegexMatcher regexMatcherPerson = new RegexMatcher(regexPredicatePerson);
-        
-        NlpPredicate nlpPredicateLocation = new NlpPredicate(NlpPredicate.NlpTokenType.Location, Arrays.asList(ZikaSchema.CONTENT_ATTR));
-        NlpExtractor nlpExtractorLocation = new NlpExtractor(nlpPredicateLocation);
-        
         // regexDate are found on regexr.com
         String regexDate = 
+                "("+
+                    "("+
+                    "((0?[1-9])|(1[0-2]))"+"(\\s|-|.|\\/)"+
+                    "((0?[1-9])|([12][0-9])|(3[01]))"+"(\\s|-|.|\\/)"+
+                    "([0-9]{4}|[0-9]{2})"+
+                    ")"+
+                    // MM/DD/YYYY, MM-DD-YYYY, MM DD YYYY, MM.DD.YYYY
+                "|"+
                     "("+
                     "((0?[1-9])|([12][0-9])|(3[01]))"+
                     " "+
                     "((jan(uary)?)|(feb(ruary)?)|(mar(ch)?)|(apr(il)?)|(may)|(june?)|(july?)|(aug(ust)?)|(sep(tember)?)|(oct(ober)?)|(nov(ember)?)|(dec(ember)?))"+
                     " "+
                     "([0-9]{4}|[0-9]{2})"+
-                    ")";
+                    ")"+
                     // DD Month YYYY
+                ")";
         RegexPredicate regexPredicateDate = new RegexPredicate(regexDate, Arrays.asList(ZikaSchema.CONTENT_ATTR),
                 DataConstants.getTrigramAnalyzer());
         RegexMatcher regexMatcherDate = new RegexMatcher(regexPredicateDate);
-        
+    
         JoinPredicate joinPredicatePersonLocation = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
         Join joinPersonLocation = new Join(joinPredicatePersonLocation);
         
@@ -378,19 +322,21 @@ public class ZikaAttempt {
         
         
         keywordMatcherZika.setInputOperator(indexSource);
-        projectionOperatorIdAndContent1.setInputOperator(keywordMatcherZika);
         
+        keywordToProjectionConnector.setInputOperator(keywordMatcherZika);
+        
+        projectionOperatorIdAndContent1.setInputOperator(keywordToProjectionConnector.getOutputOperator(0));
+        projectionOperatorIdAndContent2.setInputOperator(keywordToProjectionConnector.getOutputOperator(1));
+        projectionOperatorIdAndContent3.setInputOperator(keywordToProjectionConnector.getOutputOperator(2));
+
+                
         regexMatcherPerson.setInputOperator(projectionOperatorIdAndContent1);
-        
-        projectionOperatorIdAndContent2.setInputOperator(regexMatcherPerson);
         nlpExtractorLocation.setInputOperator(projectionOperatorIdAndContent2);
+        regexMatcherDate.setInputOperator(projectionOperatorIdAndContent3);
         
         joinPersonLocation.setInnerInputOperator(regexMatcherPerson);
         joinPersonLocation.setOuterInputOperator(nlpExtractorLocation);
-        
-        projectionOperatorIdAndContent3.setInputOperator(joinPersonLocation);
-        regexMatcherDate.setInputOperator(projectionOperatorIdAndContent3); 
-        
+               
         joinPersonLocationDate.setInnerInputOperator(regexMatcherDate);
         joinPersonLocationDate.setOuterInputOperator(joinPersonLocation);
               
@@ -401,5 +347,6 @@ public class ZikaAttempt {
         Engine.getEngine().evaluate(extractPersonPlan);
     }
     
+
 
 }
