@@ -3,6 +3,7 @@ package edu.uci.ics.textdb.dataflow.join;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -13,7 +14,6 @@ import org.junit.Test;
 import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.IField;
-import edu.uci.ics.textdb.api.common.IPredicate;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
@@ -33,9 +33,10 @@ import edu.uci.ics.textdb.dataflow.common.JoinPredicate;
 import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.fuzzytokenmatcher.FuzzyTokenMatcher;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
+import edu.uci.ics.textdb.dataflow.projection.ProjectionOperator;
+import edu.uci.ics.textdb.dataflow.projection.ProjectionPredicate;
 import edu.uci.ics.textdb.dataflow.source.IndexBasedSourceOperator;
 import edu.uci.ics.textdb.dataflow.utils.TestUtils;
-import edu.uci.ics.textdb.storage.DataReaderPredicate;
 import edu.uci.ics.textdb.storage.DataStore;
 import edu.uci.ics.textdb.storage.writer.DataWriter;
 import junit.framework.Assert;
@@ -335,10 +336,10 @@ public class JoinTest {
     // [<11, 18>]
     // [<27, 33>]
     // threshold = 20
-    // [ ]
-    // [ ]
+    // [           ]
+    //          [          ]
     // <-------->
-    // <-------> (within threshold)
+    //             <-------> (within threshold)
     // Test result: The list contains a tuple with all the fields and a span
     // list consisting of the joined span. The joined span is made up of the
     // field name, start and stop index (computed as <min(span1 spanStartIndex,
@@ -367,9 +368,8 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 11, 33, "foo", "special kind of " + "writer");
+
+        Span span1 = new Span(reviewField, 11, 33, "special_writer", "special kind of " + "writer");
         spanList.add(span1);
 
         IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
@@ -395,8 +395,8 @@ public class JoinTest {
     // [<11, 18>]
     // [<42, 48>]
     // threshold = 20
-    // [ ]
-    // [ ]
+    // [           ]
+    //           [     ]
     // <--------> (beyond threshold)
     // Test result: An empty list is returned.
     @Test
@@ -446,14 +446,21 @@ public class JoinTest {
 
         query = "this writer writes well";
         double thresholdRatio = 0.25;
-        boolean isSpanInformationAdded = false;
-        FuzzyTokenPredicate fuzzyPredicateInner = new FuzzyTokenPredicate(query, dataStoreForInner, attributeList,
-                analyzer, thresholdRatio, isSpanInformationAdded);
+        List<Attribute> textAttributes = attributeList.stream().filter(attr -> attr.getFieldType() != FieldType.TEXT).collect(Collectors.toList());
+        FuzzyTokenPredicate fuzzyPredicateInner = new FuzzyTokenPredicate(query, textAttributes,
+                analyzer, thresholdRatio);
         FuzzyTokenMatcher fuzzyMatcherInner = new FuzzyTokenMatcher(fuzzyPredicateInner);
+        fuzzyMatcherInner.setInputOperator(new IndexBasedSourceOperator(fuzzyPredicateInner.getDataReaderPredicate(dataStoreForInner)));
 
+        ProjectionPredicate removeSpanListPredicate = new ProjectionPredicate(
+                dataStoreForInner.getSchema().getAttributes().stream().map(attr -> attr.getFieldName()).collect(Collectors.toList()));
+        ProjectionOperator removeSpanListProjection = new ProjectionOperator(removeSpanListPredicate);
+        removeSpanListProjection.setInputOperator(fuzzyMatcherInner);
+        
+        
         Attribute idAttr = attributeList.get(0);
         Attribute reviewAttr = attributeList.get(4);
-        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, fuzzyMatcherInner, idAttr, reviewAttr, 20);
+        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, removeSpanListProjection, idAttr, reviewAttr, 20);
         Assert.assertEquals(0, resultList.size());
     }
 
@@ -465,9 +472,9 @@ public class JoinTest {
     // [<11, 18>]
     // [<3, 33>]
     // threshold = 20
-    // [ ]
-    // [ ]
-    // <----> <-----> (within threshold)
+    // [              ]
+    //      [   ]
+    // <---->   <-----> (within threshold)
     // Test result: The bigger span should be returned.
     // [<3, 33>]
     @Test
@@ -491,9 +498,9 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 3, 33, "foo", "takes a special " + "kind of writer");
+
+        Span span1 = new Span(reviewField, 3, 33, "special_takes a special " + "kind of writer",
+                "takes a special " + "kind of writer");
         spanList.add(span1);
 
         IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
@@ -520,9 +527,9 @@ public class JoinTest {
     // [<11, 18>]
     // [<3, 33>]
     // threshold = 20
-    // [ ]
-    // [ ]
-    // <--> <---> (beyond threshold)
+    // [             ]
+    //     [    ]
+    // <-->     <---> (beyond threshold)
     // Test result: Join should return an empty list.
     @Test
     public void testOneSpanEncompassesOtherAndDifferenceGreaterThanThreshold() throws Exception {
@@ -547,8 +554,8 @@ public class JoinTest {
     // [<75, 97>]
     // [<92, 109>]
     // threshold = 20
-    // [ ]
-    // [ ]
+    // [      ]
+    //      [         ]
     // <----> <-------> (within threshold)
     // Test result: The list contains a tuple with all the fields and a span
     // list consisting of the joined span. The joined span is made up of the
@@ -578,9 +585,9 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 75, 109, "foo", "gastrointestinal " + "tract interesting");
+
+        Span span1 = new Span(reviewField, 75, 109, "gastrointestinal tract_" + "tract interesting",
+                "gastrointestinal " + "tract interesting");
         spanList.add(span1);
 
         IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
@@ -607,8 +614,8 @@ public class JoinTest {
     // [<75, 97>]
     // [<92, 109>]
     // threshold = 10
-    // [ ]
-    // [ ]
+    // [    ]
+    //    [        ]
     // <--> <-----> (beyond threshold)
     // Test result: Join should return an empty list.
     @Test
@@ -659,9 +666,8 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 11, 18, "foo", "special");
+
+        Span span1 = new Span(reviewField, 11, 18, "special_special", "special");
         spanList.add(span1);
 
         IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
@@ -728,6 +734,436 @@ public class JoinTest {
         Assert.assertEquals(0, resultList.size());
     }
 
+    // -----------------<Test cases for intersection of tuples>----------------
+
+    // This case tests for the scenario when the tuples have different sets of
+    // attributes (hence different schemas) barring the attribute join has to
+    // be performed upon (for this case, threshold condition is satisfied).
+    // e.g. Schema1: {ID, Author, Pages, Review}
+    //		Schema2: {ID, Title, Pages, Review}
+    // 		Join Attribute: Review
+    // Test result: Join should result in a list with a single tuple which has
+    // the attributes common to both the tuples and the joined span.
+    @Test
+    public void testAttributesAndFieldsIntersection() throws Exception {
+        final Attribute idAttr = new Attribute("id", FieldType.INTEGER);
+        final Attribute authorAttr = new Attribute("author", FieldType.STRING);
+        final Attribute titleAttr = new Attribute("title", FieldType.STRING);
+        final Attribute pagesAttr = new Attribute("numberOfPages", FieldType.INTEGER);
+        final Attribute reviewAttr = new Attribute("reviewOfBook", FieldType.TEXT);
+
+        final Attribute[] bookAttr1 = { idAttr, authorAttr, pagesAttr, reviewAttr };
+        final Attribute[] modBookAttr1 = { authorAttr, reviewAttr };
+        final Attribute[] bookAttr2 = { idAttr, titleAttr, pagesAttr, reviewAttr };
+        final Attribute[] modBookAttr2 = { titleAttr, reviewAttr };
+        final Schema bookSchema1 = new Schema(bookAttr1);
+        final Schema bookSchema2 = new Schema(bookAttr2);
+
+        IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        IField[] book2 = { new IntegerField(52), new StringField("Grunt: The Curious Science of Humans at War"),
+                new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        bookTuple1 = new ArrayList<>(1);
+        bookTuple1.add(new DataTuple(bookSchema1, book1));
+        bookTuple2 = new ArrayList<>(1);
+        bookTuple2.add(new DataTuple(bookSchema2, book2));
+
+        dataStoreForOuter = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_1", bookSchema1);
+        dataWriterForOuter = new DataWriter(dataStoreForOuter, analyzer);
+        dataStoreForInner = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_2", bookSchema2);
+        dataWriterForInner = new DataWriter(dataStoreForInner, analyzer);
+        dataWriterForOuter.clearData();
+        dataWriterForInner.clearData();
+
+        dataWriterForOuter.writeData(bookTuple1);
+        dataWriterForInner.writeData(bookTuple2);
+
+        KeywordPredicate keywordPredicate = null;
+        IDataStore dataStore = null;
+        IndexBasedSourceOperator indexInputOperator = null;
+
+        String query = "special";
+        dataStore = dataStoreForOuter;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr1), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherOuter = new KeywordMatcher(keywordPredicate);
+        keywordMatcherOuter.setInputOperator(indexInputOperator);
+
+        query = "writer";
+        dataStore = dataStoreForInner;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr2), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherInner = new KeywordMatcher(keywordPredicate);
+        keywordMatcherInner.setInputOperator(indexInputOperator);
+
+        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, keywordMatcherInner, idAttr, reviewAttr, 20);
+
+        Attribute[] schemaAttributes = { idAttr, pagesAttr, reviewAttr, SchemaConstants.SPAN_LIST_ATTRIBUTE };
+
+        List<Span> spanList = new ArrayList<>();
+        String reviewField = reviewAttr.getFieldName();
+
+        Span span1 = new Span(reviewField, 11, 33, "special_writer", "special kind of " + "writer");
+        spanList.add(span1);
+
+        IField[] book = { new IntegerField(52), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task."),
+                new ListField<>(spanList) };
+        ITuple expectedTuple = new DataTuple(new Schema(schemaAttributes), book);
+        List<ITuple> expectedResult = new ArrayList<>(1);
+        expectedResult.add(expectedTuple);
+
+        boolean contains = TestUtils.containsAllResults(expectedResult, resultList);
+
+        Assert.assertEquals(1, resultList.size());
+        Assert.assertTrue(contains);
+    }
+
+    // This case tests for the scenario when one of the attributes (not the
+    // one join is performed upon) has different field values (assume threshold
+    // condition is satisfied).
+    // e.g. Schema1: {ID, Author, Title, Pages, Review}
+    //		Values1: { 2,      A,     B,     5,    ABC}
+    //		Schema2: {ID, Author, Title, Pages, Review}
+    //		Values2: { 2,      A,     C,     5,    ABC}
+    //		Join Attribute: Review
+    // Test result: The attribute and the respective field in question is
+    // dropped from the result tuple.
+    @Test
+    public void testWhenAttributeFieldsAreDifferent() throws Exception {
+        final Attribute idAttr = new Attribute("id", FieldType.INTEGER);
+        final Attribute authorAttr = new Attribute("author", FieldType.STRING);
+        final Attribute titleAttr = new Attribute("title", FieldType.STRING);
+        final Attribute pagesAttr = new Attribute("numberOfPages", FieldType.INTEGER);
+        final Attribute reviewAttr = new Attribute("reviewOfBook", FieldType.TEXT);
+
+        final Attribute[] bookAttr = { idAttr, authorAttr, titleAttr, pagesAttr, reviewAttr };
+        final Attribute[] modBookAttr = { authorAttr, titleAttr, reviewAttr };
+        final Schema bookSchema = new Schema(bookAttr);
+
+        IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        IField[] book2 = { new IntegerField(52), new StringField("Mary Roach"), new StringField("Grunt"),
+                new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        bookTuple1 = new ArrayList<>(1);
+        bookTuple1.add(new DataTuple(bookSchema, book1));
+        bookTuple2 = new ArrayList<>(1);
+        bookTuple2.add(new DataTuple(bookSchema, book2));
+
+        dataStoreForOuter = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_1", bookSchema);
+        dataWriterForOuter = new DataWriter(dataStoreForOuter, analyzer);
+        dataStoreForInner = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_2", bookSchema);
+        dataWriterForInner = new DataWriter(dataStoreForInner, analyzer);
+        dataWriterForOuter.clearData();
+        dataWriterForInner.clearData();
+
+        dataWriterForOuter.writeData(bookTuple1);
+        dataWriterForInner.writeData(bookTuple2);
+
+        KeywordPredicate keywordPredicate = null;
+        IDataStore dataStore = null;
+        IndexBasedSourceOperator indexInputOperator = null;
+
+        String query = "special";
+        dataStore = dataStoreForOuter;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherOuter = new KeywordMatcher(keywordPredicate);
+        keywordMatcherOuter.setInputOperator(indexInputOperator);
+
+        query = "writer";
+        dataStore = dataStoreForInner;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherInner = new KeywordMatcher(keywordPredicate);
+        keywordMatcherInner.setInputOperator(indexInputOperator);
+
+        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, keywordMatcherInner, idAttr, reviewAttr, 20);
+
+        Attribute[] schemaAttributes = { idAttr, authorAttr, pagesAttr, reviewAttr,
+                SchemaConstants.SPAN_LIST_ATTRIBUTE };
+
+        List<Span> spanList = new ArrayList<>();
+        String reviewField = reviewAttr.getFieldName();
+
+        Span span1 = new Span(reviewField, 11, 33, "special_writer", "special kind of " + "writer");
+        spanList.add(span1);
+
+        IField[] book = { new IntegerField(52), new StringField("Mary Roach"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task."),
+                new ListField<>(spanList) };
+        ITuple expectedTuple = new DataTuple(new Schema(schemaAttributes), book);
+        List<ITuple> expectedResult = new ArrayList<>(1);
+        expectedResult.add(expectedTuple);
+
+        boolean contains = TestUtils.containsAllResults(expectedResult, resultList);
+
+        Assert.assertEquals(1, resultList.size());
+        Assert.assertTrue(contains);
+    }
+
+    // This case tests for the scenario when one of the attributes (the one
+    // join is performed upon) has different field values (assume threshold
+    // condition is satisfied).
+    // e.g. Schema1: {ID, Author, Title, Pages, Review}
+    //		Values1: { 2,      A,     B,     5,    ABC}
+    //		Schema2: {ID, Author, Title, Pages, Review}
+    //		Values2: { 2,      A,     B,     5,     AB}
+    //		Join Attribute: Review
+    // Test result: An empty list is returned.
+    @Test
+    public void testJoinAttributeFieldsAreDifferent() throws Exception {
+        final Attribute idAttr = new Attribute("id", FieldType.INTEGER);
+        final Attribute authorAttr = new Attribute("author", FieldType.STRING);
+        final Attribute titleAttr = new Attribute("title", FieldType.STRING);
+        final Attribute pagesAttr = new Attribute("numberOfPages", FieldType.INTEGER);
+        final Attribute reviewAttr = new Attribute("reviewOfBook", FieldType.TEXT);
+
+        final Attribute[] bookAttr = { idAttr, authorAttr, titleAttr, pagesAttr, reviewAttr };
+        final Attribute[] modBookAttr = { authorAttr, titleAttr, reviewAttr };
+        final Schema bookSchema = new Schema(bookAttr);
+
+        IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        IField[] book2 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task") };
+
+        bookTuple1 = new ArrayList<>(1);
+        bookTuple1.add(new DataTuple(bookSchema, book1));
+        bookTuple2 = new ArrayList<>(1);
+        bookTuple2.add(new DataTuple(bookSchema, book2));
+
+        dataStoreForOuter = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_1", bookSchema);
+        dataWriterForOuter = new DataWriter(dataStoreForOuter, analyzer);
+        dataStoreForInner = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_2", bookSchema);
+        dataWriterForInner = new DataWriter(dataStoreForInner, analyzer);
+        dataWriterForOuter.clearData();
+        dataWriterForInner.clearData();
+
+        dataWriterForOuter.writeData(bookTuple1);
+        dataWriterForInner.writeData(bookTuple2);
+
+        KeywordPredicate keywordPredicate = null;
+        IDataStore dataStore = null;
+        IndexBasedSourceOperator indexInputOperator = null;
+
+        String query = "special";
+        dataStore = dataStoreForOuter;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherOuter = new KeywordMatcher(keywordPredicate);
+        keywordMatcherOuter.setInputOperator(indexInputOperator);
+
+        query = "writer";
+        dataStore = dataStoreForInner;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherInner = new KeywordMatcher(keywordPredicate);
+        keywordMatcherInner.setInputOperator(indexInputOperator);
+
+        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, keywordMatcherInner, idAttr, reviewAttr, 20);
+
+        Assert.assertEquals(0, resultList.size());
+    }
+
+    // This case tests for the scenario when an attribute (not the one join is
+    // performed upon) has same name and same respective field value but has
+    // different field types.
+    // Test result: The attribute and the respective field in question is
+    // dropped from the result tuple.
+    @Test
+    public void testWhenAttributeOfSameNameAreDifferent() throws Exception {
+        final Attribute idAttr = new Attribute("id", FieldType.INTEGER);
+        final Attribute authorAttr = new Attribute("author", FieldType.STRING);
+        final Attribute titleAttr1 = new Attribute("title", FieldType.STRING);
+        final Attribute titleAttr2 = new Attribute("title", FieldType.TEXT);
+        final Attribute pagesAttr = new Attribute("numberOfPages", FieldType.INTEGER);
+        final Attribute reviewAttr = new Attribute("reviewOfBook", FieldType.TEXT);
+
+        final Attribute[] bookAttr1 = { idAttr, authorAttr, titleAttr1, pagesAttr, reviewAttr };
+        final Attribute[] modBookAttr1 = { authorAttr, titleAttr1, reviewAttr };
+        final Schema bookSchema1 = new Schema(bookAttr1);
+        final Attribute[] bookAttr2 = { idAttr, authorAttr, titleAttr2, pagesAttr, reviewAttr };
+        final Attribute[] modBookAttr2 = { authorAttr, titleAttr2, reviewAttr };
+        final Schema bookSchema2 = new Schema(bookAttr2);
+
+        IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        IField[] book2 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        bookTuple1 = new ArrayList<>(1);
+        bookTuple1.add(new DataTuple(bookSchema1, book1));
+        bookTuple2 = new ArrayList<>(1);
+        bookTuple2.add(new DataTuple(bookSchema2, book2));
+
+        dataStoreForOuter = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_1", bookSchema1);
+        dataWriterForOuter = new DataWriter(dataStoreForOuter, analyzer);
+        dataStoreForInner = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_2", bookSchema2);
+        dataWriterForInner = new DataWriter(dataStoreForInner, analyzer);
+        dataWriterForOuter.clearData();
+        dataWriterForInner.clearData();
+
+        dataWriterForOuter.writeData(bookTuple1);
+        dataWriterForInner.writeData(bookTuple2);
+
+        KeywordPredicate keywordPredicate = null;
+        IDataStore dataStore = null;
+        IndexBasedSourceOperator indexInputOperator = null;
+
+        String query = "special";
+        dataStore = dataStoreForOuter;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr1), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherOuter = new KeywordMatcher(keywordPredicate);
+        keywordMatcherOuter.setInputOperator(indexInputOperator);
+
+        query = "writer";
+        dataStore = dataStoreForInner;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr2), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherInner = new KeywordMatcher(keywordPredicate);
+        keywordMatcherInner.setInputOperator(indexInputOperator);
+
+        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, keywordMatcherInner, idAttr, reviewAttr, 20);
+
+        Attribute[] schemaAttributes = { idAttr, authorAttr, pagesAttr, reviewAttr,
+                SchemaConstants.SPAN_LIST_ATTRIBUTE };
+
+        List<Span> spanList = new ArrayList<>();
+        String reviewField = reviewAttr.getFieldName();
+
+        Span span1 = new Span(reviewField, 11, 33, "special_writer", "special kind of " + "writer");
+        spanList.add(span1);
+
+        IField[] book = { new IntegerField(52), new StringField("Mary Roach"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task."),
+                new ListField<>(spanList) };
+        ITuple expectedTuple = new DataTuple(new Schema(schemaAttributes), book);
+        List<ITuple> expectedResult = new ArrayList<>(1);
+        expectedResult.add(expectedTuple);
+
+        boolean contains = TestUtils.containsAllResults(expectedResult, resultList);
+
+        Assert.assertEquals(1, resultList.size());
+        Assert.assertTrue(contains);
+    }
+
+    // This case tests for the scenario when an attribute (the one join is
+    // performed upon) has same name and same respective field value but has
+    // different field types.
+    // Test result: An empty list is returned.
+    @Test
+    public void testJoinAttributeOfSameNameHaveDifferentFieldType() throws Exception {
+        final Attribute idAttr = new Attribute("id", FieldType.INTEGER);
+        final Attribute authorAttr = new Attribute("author", FieldType.STRING);
+        final Attribute titleAttr = new Attribute("title", FieldType.STRING);
+        final Attribute pagesAttr = new Attribute("numberOfPages", FieldType.INTEGER);
+        final Attribute reviewAttr1 = new Attribute("reviewOfBook", FieldType.TEXT);
+        final Attribute reviewAttr2 = new Attribute("reviewOfBook", FieldType.STRING);
+
+        final Attribute[] bookAttr1 = { idAttr, authorAttr, titleAttr, pagesAttr, reviewAttr1 };
+        final Attribute[] modBookAttr1 = { authorAttr, titleAttr, reviewAttr1 };
+        final Schema bookSchema1 = new Schema(bookAttr1);
+        final Attribute[] bookAttr2 = { idAttr, authorAttr, titleAttr, pagesAttr, reviewAttr2 };
+        final Attribute[] modBookAttr2 = { authorAttr, titleAttr, reviewAttr2 };
+        final Schema bookSchema2 = new Schema(bookAttr2);
+
+        IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        IField[] book2 = { new IntegerField(52), new StringField("Mary Roach"),
+                new StringField("Grunt: The Curious Science of Humans at War"), new IntegerField(288),
+                new TextField("It takes a special kind " + "of writer to make topics ranging from death to our "
+                        + "gastrointestinal tract interesting (sometimes "
+                        + "hilariously so), and pop science writer Mary Roach is " + "always up to the task.") };
+
+        bookTuple1 = new ArrayList<>(1);
+        bookTuple1.add(new DataTuple(bookSchema1, book1));
+        bookTuple2 = new ArrayList<>(1);
+        bookTuple2.add(new DataTuple(bookSchema2, book2));
+
+        dataStoreForOuter = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_1", bookSchema1);
+        dataWriterForOuter = new DataWriter(dataStoreForOuter, analyzer);
+        dataStoreForInner = new DataStore(DataConstants.INDEX_DIR + "/join_test_dir_2", bookSchema2);
+        dataWriterForInner = new DataWriter(dataStoreForInner, analyzer);
+        dataWriterForOuter.clearData();
+        dataWriterForInner.clearData();
+
+        dataWriterForOuter.writeData(bookTuple1);
+        dataWriterForInner.writeData(bookTuple2);
+
+        KeywordPredicate keywordPredicate = null;
+        IDataStore dataStore = null;
+        IndexBasedSourceOperator indexInputOperator = null;
+
+        String query = "special";
+        dataStore = dataStoreForOuter;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr1), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherOuter = new KeywordMatcher(keywordPredicate);
+        keywordMatcherOuter.setInputOperator(indexInputOperator);
+
+        query = "writer";
+        dataStore = dataStoreForInner;
+        keywordPredicate = new KeywordPredicate(query, Arrays.asList(modBookAttr2), analyzer,
+                DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED);
+        indexInputOperator = new IndexBasedSourceOperator(keywordPredicate.generateDataReaderPredicate(dataStore));
+        keywordMatcherInner = new KeywordMatcher(keywordPredicate);
+        keywordMatcherInner.setInputOperator(indexInputOperator);
+
+        List<ITuple> resultList = getJoinResults(keywordMatcherOuter, keywordMatcherInner, idAttr, reviewAttr1, 20);
+
+        Assert.assertEquals(0, resultList.size());
+    }
+
     // --------------------<END of single tuple test cases>--------------------
 
     // This case tests for the scenario when both the operators' have multiple
@@ -757,15 +1193,15 @@ public class JoinTest {
     // list of multiple tuples should match with the ID of the single tuple) and
     // spans are within the threshold.
     // e.g.
-    // ID: 1 2 3 4
+    // ID: 			1 		  2 		3		  4
     // Tuples: [<67, 73>][<67, 73>][<67, 73>][<67, 73>]
-    // ID: 2
+    // ID: 		   2
     // Tuple: [<62, 66>]
     // threshold = 12
-    // [ ] [ ] [ ] [ ]
-    // [ ]
+    // [      ] [ ] [ ] [ ]
+    //       [      ]
     // <----->
-    // <-----> (ID match, within threshold)
+    //        <-----> (ID match, within threshold)
     // Test result: Join should result in a list with a single tuple with the
     // matched ID and the corresponding joined spans.
     // Tuple: [<62, 73>]
@@ -793,13 +1229,12 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 0, 16, "foo", "Review of a " + "Book");
+
+        Span span1 = new Span(reviewField, 0, 16, "review_book", "Review of a " + "Book");
         spanList.add(span1);
-        Span span2 = new Span(reviewField, 62, 73, "foo", "book review");
+        Span span2 = new Span(reviewField, 62, 73, "review_book", "book review");
         spanList.add(span2);
-        Span span3 = new Span(reviewField, 235, 246, "foo", "book review");
+        Span span3 = new Span(reviewField, 235, 246, "review_book", "book review");
         spanList.add(span3);
 
         IField[] book1 = { new IntegerField(55), new StringField("Matti Friedman"),
@@ -824,13 +1259,13 @@ public class JoinTest {
     // list of multiple tuples should match with the ID of the single tuple) and
     // none of the spans are not within threshold.
     // e.g.
-    // ID: 1 2 3 4
+    // ID: 			1		  2		    3		  4
     // Tuples: [<67, 73>][<67, 73>][<67, 73>][<67, 73>]
-    // ID: 2
+    // ID: 		   2
     // Tuple: [<62, 66>]
     // threshold = 4
     // [ ] [ ] [ ] [ ]
-    // [ ]
+    //      [ ]
     // <--->
     // <--> (ID match, beyond threshold)
     // Test result: Join should result in an empty list.
@@ -855,15 +1290,15 @@ public class JoinTest {
     // This case tests for the scenario when both the operators' have multiple
     // tuples and some of tuples IDs match and spans are within threshold.
     // e.g.
-    // ID: 1 2 3 4
+    // ID: 			1		  2		    3		  4
     // Tuples: [<67, 73>][<67, 73>][<67, 73>][<67, 73>]
-    // ID: 2 4
+    // ID: 			2 		   4
     // Tuples: [<62, 66>] [<62, 66>]
     // threshold = 12
-    // [ ] [ ] [ ] [ ]
-    // [ ] [ ] [ ] [ ] [ ]
+    // [       ]            [      ] [ ] [ ]
+    //       [      ] [       ] [ ] [ ] [ ]
     // <-----> <---->
-    // <-----> <---->(ID match, beyond threshold)
+    //                <-----> <---->(ID match, within threshold)
     // Test result: Join should result in a list containing tuples with spans.
     // The number of tuples is equal to the number of tuples with both ID match
     // and span within threshold.
@@ -899,13 +1334,12 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 0, 16, "foo", "Review of a " + "Book");
+
+        Span span1 = new Span(reviewField, 0, 16, "review_book", "Review of a " + "Book");
         spanList.add(span1);
-        Span span2 = new Span(reviewField, 62, 73, "foo", "book review");
+        Span span2 = new Span(reviewField, 62, 73, "review_book", "book review");
         spanList.add(span2);
-        Span span3 = new Span(reviewField, 235, 246, "foo", "book review");
+        Span span3 = new Span(reviewField, 235, 246, "review_book", "book review");
         spanList.add(span3);
 
         IField[] book1 = { new IntegerField(52), new StringField("Mary Roach"),
@@ -960,15 +1394,15 @@ public class JoinTest {
     // tuples and some of tuples IDs match, but none of spans are within
     // threshold.
     // e.g.
-    // ID: 1 2 3 4
+    // ID: 			1		  2		    3		  4
     // Tuples: [<67, 73>][<67, 73>][<67, 73>][<67, 73>]
-    // ID: 2 4
+    // ID: 			2  		   4
     // Tuples: [<62, 66>] [<62, 66>]
     // threshold = 4
-    // [ ] [ ] [ ] [ ]
-    // [ ] [ ] [ ] [ ] [ ]
-    // <-----> <---->
-    // <-----> <---->(ID match, beyond threshold)
+    // [     ]        [      ]       [      ] [ ]
+    // [ ] [ ] [       ]      [       ] [ ]
+    //         <-----> <---->
+    //                        <-----> <---->(ID match, beyond threshold)
     // Test result: Join should result in an empty list.
     @Test
     public void testBothOperatorsMultipleTuplesSpanExceedThreshold() throws Exception {
@@ -1022,12 +1456,12 @@ public class JoinTest {
 
         List<Span> spanList = new ArrayList<>();
         String reviewField = attributeList.get(4).getFieldName();
-        // The "foo" (key) is a tentative key; will be replaced by an actual
-        // key once implementation is fixed.
-        Span span1 = new Span(reviewField, 28, 119, "foo", "typical review. " + "This is a test. A book review test. "
-                + "A test to test queries without actually");
+
+        Span span1 = new Span(reviewField, 28, 119, "typical_actually", "typical review. "
+                + "This is a test. A book review test. " + "A test to test queries without actually");
         spanList.add(span1);
-        Span span2 = new Span(reviewField, 186, 234, "foo", "actually a review " + "even if it is not your typical");
+        Span span2 = new Span(reviewField, 186, 234, "typical_actually",
+                "actually a review " + "even if it is not your typical");
         spanList.add(span2);
 
         IField[] book1 = { new IntegerField(51), new StringField("author unknown"), new StringField("typical"),
