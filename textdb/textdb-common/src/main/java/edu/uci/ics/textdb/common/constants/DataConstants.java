@@ -9,6 +9,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.ngram.NGramTokenizerFactory;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 /**
  * @author sandeepreddy602
@@ -82,6 +83,13 @@ public class DataConstants {
         return CustomAnalyzer.builder()
                 .withTokenizer(NGramTokenizerFactory.class, new String[] { "minGramSize", "3", "maxGramSize", "3" })
                 .addTokenFilter(LowerCaseFilterFactory.class).build();
+    }
+    
+    /**
+     * @return a Lucene standard analyzer
+     */
+    public static Analyzer getStandardAnalyzer() {
+        return new StandardAnalyzer();
     }
 
 }

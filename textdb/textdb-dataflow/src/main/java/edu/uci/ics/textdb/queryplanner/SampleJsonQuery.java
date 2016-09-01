@@ -21,7 +21,7 @@ public class SampleJsonQuery {
             "            \"operatorType\" : \"KeywordMatcher\",\n" + 
             "            \"properties\" : {\n" + 
             "                \"keyword\" : \"zika\",\n" + 
-            "                \"attributes\" : [\"content\"],\n" + 
+            "                \"attributes\" : \"content\",\n" + 
             "                \"matchingType\" : \"conjunction\"\n" + 
             "            }\n" + 
             "        },\n" + 
@@ -30,7 +30,7 @@ public class SampleJsonQuery {
             "            \"operatorType\" : \"RegexMatcher\",\n" + 
             "            \"properties\" : {\n" + 
             "                \"regex\" : \"\\\\b(woman)|(man)|(patient)\\\\b\",\n" + 
-            "                \"attributes\" : [\"content\"]\n" + 
+            "                \"attributes\" : \"content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
@@ -38,7 +38,7 @@ public class SampleJsonQuery {
             "            \"operatorType\" : \"RegexMatcher\",\n" + 
             "            \"properties\" : {\n" + 
             "                \"regex\" : \"date about regex\",\n" + 
-            "                \"attributes\" : [\"content\"]\n" + 
+            "                \"attributes\" : \"content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
@@ -46,7 +46,7 @@ public class SampleJsonQuery {
             "            \"operatorType\" : \"NlpExtractor\",\n" + 
             "            \"properties\" : {\n" + 
             "                \"nlpType\" : \"Location\",\n" + 
-            "                \"attributes\" : [\"content\"]\n" + 
+            "                \"attributes\" : \"content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
@@ -57,7 +57,7 @@ public class SampleJsonQuery {
             "                    \"predicateType\" : \"characterOffset\",\n" + 
             "                    \"predicateCondition\" : \"100\"\n" + 
             "                },\n" + 
-            "                \"attributes\" : [\"content\"]\n" + 
+            "                \"attributes\" : \"content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
@@ -68,7 +68,7 @@ public class SampleJsonQuery {
             "                    \"predicateType\" : \"characterOffset\",\n" + 
             "                    \"predicateCondition\" : \"100\"\n" + 
             "                },\n" + 
-            "                \"attributes\" : [\"content\"]\n" + 
+            "                \"attributes\" : \"content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
@@ -82,28 +82,28 @@ public class SampleJsonQuery {
             "            \"id\" : \"projection_content_1\",\n" + 
             "            \"operatorType\" : \"Projection\",\n" + 
             "            \"properties\" : {\n" + 
-            "                \"attributes\" : [\"id\", \"content\"]\n" + 
+            "                \"attributes\" : \"id, content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
             "            \"id\" : \"projection_content_2\",\n" + 
             "            \"operatorType\" : \"Projection\",\n" + 
             "            \"properties\" : {\n" + 
-            "                \"attributes\" : [\"id\", \"content\"]\n" + 
+            "                \"attributes\" : \"id, content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
             "            \"id\" : \"projection_content_3\",\n" + 
             "            \"operatorType\" : \"Projection\",\n" + 
             "            \"properties\" : {\n" + 
-            "                \"attributes\" : [\"id\", \"content\"]\n" + 
+            "                \"attributes\" : \"id, content\"\n" + 
             "            }\n" + 
             "        },\n" + 
             "        {\n" + 
             "            \"id\" : \"projection_span\",\n" + 
             "            \"operatorType\" : \"Projection\",\n" + 
             "            \"properties\" : {\n" + 
-            "                \"attributes\" : [\"id\", \"spanList\"]\n" + 
+            "                \"attributes\" : \"id, content\"\n" + 
             "            }\n" + 
             "        }\n" + 
             "    ],\n" + 
@@ -162,6 +162,37 @@ public class SampleJsonQuery {
             "            \"to\"   : \"sink_result\"\n" + 
             "        }\n" + 
             "    ]\n" + 
-            "}";
-
+            "}\n" + 
+            "";
+    
+    
+    
+    public static String sampleJsonQueryKeywordMatcher = "{\n" + 
+            "    \"operators\" : [\n" + 
+            "        {\n" + 
+            "            \"id\" : \"keyword_zika\",\n" + 
+            "            \"operatorType\" : \"KeywordMatcher\",\n" + 
+            "            \"properties\" : {\n" + 
+            "                \"keyword\" : \"zika\",\n" + 
+            "                \"attributeNames\" : \"content\",\n" + 
+            "                \"attributeTypes\" : \"text\",\n" + 
+            "                \"matchingType\" : \"conjunction_indexbased\"\n" + 
+            "            }\n" + 
+            "        },\n" + 
+            "        {\n" + 
+            "            \"id\" : \"keyword_irvine\",\n" + 
+            "            \"operatorType\" : \"KeywordMatcher\",\n" + 
+            "            \"properties\" : {\n" + 
+            "                \"keyword\" : \"Irvine\",\n" + 
+            "                \"attributeNames\" : \"city, location, content\",\n" + 
+            "                \"attributeTypes\" : \"string, string, text\",\n" + 
+            "                \"matchingType\" : \"substring_scanbased\"\n" + 
+            "            }\n" + 
+            "        }\n" + 
+            "    ],\n" + 
+            "\n" + 
+            "    \"links\" : [\n" + 
+            "    ]\n" + 
+            "}\n" + 
+            "";
 }
