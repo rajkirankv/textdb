@@ -195,4 +195,31 @@ public class SampleJsonQuery {
             "    ]\n" + 
             "}\n" + 
             "";
+    
+    public static String sampleJsonQueryRegexMatcher = "{\n" + 
+            "    \"operators\" : [\n" + 
+            "        {\n" + 
+            "            \"id\" : \"regex_person\",\n" + 
+            "            \"operatorType\" : \"RegexMatcher\",\n" + 
+            "            \"properties\" : {\n" + 
+            "                \"regex\" : \"\\\\b(woman)|(man)|(patient)\\\\b\",\n" + 
+            "                \"attributeNames\" : \"content\",\n" + 
+            "                \"attributeTypes\" : \"text\"\n" + 
+            "            }\n" + 
+            "        },\n" + 
+            "        {\n" + 
+            "            \"id\" : \"regex_date\",\n" + 
+            "            \"operatorType\" : \"RegexMatcher\",\n" + 
+            "            \"properties\" : {\n" + 
+            "                \"regex\" : \"date about regex\",\n" + 
+            "                \"attributeNames\" : \"content\",\n" + 
+            "                \"attributeTypes\" : \"text\"\n" + 
+            "            }\n" + 
+            "        }\n" + 
+            "    ],\n" + 
+            "\n" + 
+            "    \"links\" : [\n" + 
+            "    ]\n" + 
+            "}";
+    
 }

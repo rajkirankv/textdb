@@ -12,14 +12,10 @@ import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 
 public class KeywordMatcherBuilder extends OperatorBuilder {
     
-    private static final String KEYWORD = "keyword";
-    private static final String ATTRIBUTE_NAMES = "attributeNames";
-    private static final String ATTRIBUTE_TYPES = "attributeTypes";
-    private static final String MATCHING_TYPE = "matchingType";
-    private static final String LIMIT = "limit";
-    private static final String OFFSET = "offset";
-    
-    
+    public static final String KEYWORD = "keyword";
+    public static final String MATCHING_TYPE = "matchingType";
+
+    @Override
     public KeywordMatcher build() throws ParseException, DataFlowException {
         String keyword = getRequiredProperty(KEYWORD);
         String attributeNamesStr = getRequiredProperty(ATTRIBUTE_NAMES);
@@ -56,17 +52,7 @@ public class KeywordMatcherBuilder extends OperatorBuilder {
         return keywordMatcher;
     }
     
-    private Integer tryParseInt(String intStr) {
-        if (intStr == null || intStr.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(intStr);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-    
+
     private boolean isValidKeywordMatchingType(String matchingTypeStr) {
         return Stream.of(KeywordMatchingType.values())
                 .map(KeywordMatchingType::name)

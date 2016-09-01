@@ -15,6 +15,11 @@ public abstract class OperatorBuilder {
     protected String operatorID;
     protected Map<String, String> operatorProperties;
     
+    public static final String ATTRIBUTE_NAMES = "attributeNames";
+    public static final String ATTRIBUTE_TYPES = "attributeTypes";
+    public static final String LIMIT = "limit";
+    public static final String OFFSET = "offset";
+    
     public OperatorBuilder() {
     }
     
@@ -59,6 +64,17 @@ public abstract class OperatorBuilder {
     private List<String> splitAttributes(String attributesStr) {
         String[] attributeArray = attributesStr.split(",");
         return Arrays.asList(attributeArray).stream().map(s -> s.trim()).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+    }
+    
+    protected Integer tryParseInt(String intStr) {
+        if (intStr == null || intStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(intStr);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
 }

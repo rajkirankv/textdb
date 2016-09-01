@@ -8,6 +8,7 @@ import org.json.*;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
+import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
 
 public class JsonPlanner {
     
@@ -80,6 +81,16 @@ public class JsonPlanner {
             System.out.println("matchType: "+keywordMatcher.getPredicate().getOperatorType());
             System.out.println("limit:     "+keywordMatcher.getLimit());
             System.out.println("offset:    "+keywordMatcher.getOffset());
+            System.out.println();
+        }
+        
+        if (operator instanceof RegexMatcher) {
+            RegexMatcher regexMatcher = (RegexMatcher) operator;
+            System.out.println("regex matcher successfully built!");
+            System.out.println("regex:    "+regexMatcher.getPredicate().getRegex());
+            System.out.println("attrList: "+regexMatcher.getPredicate().getAttributeList());
+            System.out.println("limit:    "+regexMatcher.getLimit());
+            System.out.println("offset:   "+regexMatcher.getOffset());
             System.out.println();
         }
         

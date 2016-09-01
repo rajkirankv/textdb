@@ -36,6 +36,7 @@ public class JsonPlannerConstants {
     static {
         operatorBuilderMap = new HashMap<>();
         operatorBuilderMap.put("KeywordMatcher".toLowerCase(), KeywordMatcherBuilder.class);
+        operatorBuilderMap.put("RegexMatcher".toLowerCase(), RegexMatcherBuilder.class);
     }
     
     public static boolean isValidOperator(String operatorStr) {
