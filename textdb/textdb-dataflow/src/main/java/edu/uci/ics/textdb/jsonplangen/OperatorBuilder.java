@@ -11,6 +11,15 @@ import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
 
+/**
+ * OperatorBuilder is a base abstract class for building an operator based on its properties.
+ * Sub classes needs to implement the build() function, which builds the IOperator object and returns it.
+ * 
+ * This abstract class also provides some helper functions that will be commonly used when building operators.
+ * 
+ * @author zuozhi
+ *
+ */
 public abstract class OperatorBuilder {
     
     protected String operatorID;
@@ -24,6 +33,12 @@ public abstract class OperatorBuilder {
     public OperatorBuilder() {
     }
     
+    /**
+     * specifyIDAndProperties must be called first to specify Operator ID and attributes.
+     * 
+     * @param operatorID
+     * @param operatorProperties
+     */
     public void specifyIDAndProperties(String operatorID, Map<String, String> operatorProperties) {
         this.operatorID = operatorID;
         this.operatorProperties = operatorProperties;
@@ -31,6 +46,13 @@ public abstract class OperatorBuilder {
     
     public abstract IOperator build() throws Exception;
     
+    /**
+     * This function returns a string that is required. 
+     * PlanGenException is thrown if the operator properties doens't contain the key.
+     * @param key
+     * @return value
+     * @throws PlanGenException, if the key is not in operator properties.
+     */
     protected String getRequiredProperty(String key) throws PlanGenException {
         if (operatorProperties.containsKey(key)) {
             return operatorProperties.get(key);
