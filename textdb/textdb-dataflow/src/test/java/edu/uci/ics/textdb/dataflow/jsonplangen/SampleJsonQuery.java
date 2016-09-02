@@ -186,7 +186,9 @@ public class SampleJsonQuery {
             "                \"keyword\" : \"Irvine\",\n" + 
             "                \"attributeNames\" : \"city, location, content\",\n" + 
             "                \"attributeTypes\" : \"string, string, text\",\n" + 
-            "                \"matchingType\" : \"substring_scanbased\"\n" + 
+            "                \"matchingType\" : \"substring_scanbased\",\n" + 
+            "                \"limit\" : \"10\",\n" + 
+            "                \"offset\" : \"2\"\n" + 
             "            }\n" + 
             "        }\n" + 
             "    ],\n" + 

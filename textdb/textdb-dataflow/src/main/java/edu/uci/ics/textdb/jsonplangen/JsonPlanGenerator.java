@@ -7,8 +7,6 @@ import java.util.Map;
 import org.json.*;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
-import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
-import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
 
 public class JsonPlanGenerator {
     
@@ -31,10 +29,8 @@ public class JsonPlanGenerator {
         JSONObject jsonObject = new JSONObject(jsonQueryString);
         
         JSONArray operatorJsonArray = jsonObject.getJSONArray(OPERATORS);
-        JSONArray linksJsonArray = jsonObject.getJSONArray(LINKS);
         
-        buildOperators(operatorJsonArray);
-                
+        buildOperators(operatorJsonArray);                
     }
     
     private void buildOperators(JSONArray operatorJsonArray) throws Exception {
@@ -71,30 +67,13 @@ public class JsonPlanGenerator {
               
         IOperator operator = JsonPlanGenConstants.buildOperator(operatorType, operatorID, operatorProperties);
         operatorMap.put(operatorID, operator);
-        
-        if (operator instanceof KeywordMatcher) {
-            KeywordMatcher keywordMatcher = (KeywordMatcher) operator;
-            System.out.println("keyword matcher successfully built!");
-            System.out.println("keyword:   "+keywordMatcher.getPredicate().getQuery());
-            System.out.println("attrList:  "+keywordMatcher.getPredicate().getAttributeList());
-            System.out.println("matchType: "+keywordMatcher.getPredicate().getOperatorType());
-            System.out.println("limit:     "+keywordMatcher.getLimit());
-            System.out.println("offset:    "+keywordMatcher.getOffset());
-            System.out.println();
-        }
-        
-        if (operator instanceof RegexMatcher) {
-            RegexMatcher regexMatcher = (RegexMatcher) operator;
-            System.out.println("regex matcher successfully built!");
-            System.out.println("regex:    "+regexMatcher.getPredicate().getRegex());
-            System.out.println("attrList: "+regexMatcher.getPredicate().getAttributeList());
-            System.out.println("limit:    "+regexMatcher.getLimit());
-            System.out.println("offset:   "+regexMatcher.getOffset());
-            System.out.println();
-        }
+
         
     }
     
     
+    public Map<String, IOperator> getOperatorMap() {
+        return operatorMap;
+    }
 
 }
