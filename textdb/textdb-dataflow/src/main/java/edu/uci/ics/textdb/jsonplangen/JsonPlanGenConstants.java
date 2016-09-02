@@ -15,6 +15,10 @@ import edu.uci.ics.textdb.api.dataflow.IOperator;
  *
  */
 public class JsonPlanGenConstants {
+    
+    // This class doesn't need to be initialized.
+    private JsonPlanGenConstants() {
+    }
 
     /**
      * A list of all operators of TextDB.
