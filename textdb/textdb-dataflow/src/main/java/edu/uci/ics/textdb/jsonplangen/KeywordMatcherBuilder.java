@@ -12,6 +12,18 @@ import edu.uci.ics.textdb.common.exception.PlanGenException;
 import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 
+/**
+ * KeywordMatcherBuilder is an OperatorBuilder that builds a KeywordMatcher.
+ * 
+ * Besides commonly used properties that are defined in OperatorBuilder, 
+ * KeywordMatcherBuilder currently needs the following properties:
+ * 
+ * keyword (required)
+ * matchingType (required)
+ * 
+ * @author zuozhi
+ *
+ */
 public class KeywordMatcherBuilder extends OperatorBuilder {
 
     public static final String KEYWORD = "keyword";

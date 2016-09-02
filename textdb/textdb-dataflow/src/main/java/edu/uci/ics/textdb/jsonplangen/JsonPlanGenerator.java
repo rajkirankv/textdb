@@ -8,6 +8,56 @@ import org.json.*;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 
+/**
+ * JsonPlanGenerator generates a query plan according to a query model in JSON format.
+ * 
+ * The JSON query model is currently defined as the following format:
+ * 
+ * operators: a list of operators.
+ * links: a list of links from an operator to another.
+ * 
+ * each operator contains three attributes:
+ * id: an unique ID of this operator
+ * operatorType: type of the operator (for example, KeywordMatcher, RegexMatcher)
+ * properties: properties that this operators needs (for example, keyword, regex)
+ * properties are treated as flat string key-value pairs.
+ * 
+ * each link contains two attributes:
+ * from: operatorID of the link's origin
+ * to:   operatorID of the link's destination
+ * 
+ * Sample query format:
+ * {
+ *   "operators" : [
+ *      {
+ *        "id" : "keyword_1",
+ *        "operatorType" : "KeywordMatcher",
+ *        "properties" : {
+ *          "keyword" : "textdb",
+ *          "attributeNames" : "title, content",
+ *          "atttibuteTypes" : "STRING, TEXT"
+ *        }
+ *      },
+ *      {
+ *        "id" : "sink_1",
+ *        "operatorType" : "FileSink",
+ *        "properties" : {
+ *          "path" : "./result.txt"
+ *        }
+ *      }
+ *   ],
+ *   
+ *   "links" : [
+ *      {
+ *        "from" : "keyword_1",
+ *        "to"   : "sink_1"
+ *      }
+ *   ]
+ * }
+ * 
+ * @author Zuozhi Wang
+ *
+ */
 public class JsonPlanGenerator {
     
     private static final String OPERATORS = "operators";

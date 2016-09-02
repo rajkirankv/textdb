@@ -16,15 +16,15 @@ import edu.uci.ics.textdb.common.exception.PlanGenException;
  * its properties. Sub classes needs to implement the build() function, which
  * builds the IOperator object and returns it.
  * 
- * This abstract class also provides some helper functions that will be commonly
- * used when building operators.
- * 
- * This abstract class also defines some commonly used variables: operatorID and
- * operatorProperties: these two variables are available for sub-classes to
- * directly use.
- * 
- * ATTRIBUTE_NAMES, ATTRIBUTE_TYPES, LIMIT, OFFSET: commonly used keys in
- * operatorProperties.
+ * This abstract class defines some commonly used variables:  
+ * operatorID: a string representing operator's ID
+ * operatorProperties: a map of key-value pairs representing operator's properties
+ *  
+ * OperatorBuilder currently offers helper functions for the following properties:
+ * ATTRIBUTE_NAMES (required to generate attribute list)
+ * ATTRIBUTE_TYPES (required to generate attribute list)
+ * LIMIT  (often optional)
+ * OFFSET (often optional)
  * 
  * @author Zuozhi Wang (zuozhiw)
  *
