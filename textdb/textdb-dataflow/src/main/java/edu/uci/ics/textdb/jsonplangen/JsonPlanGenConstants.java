@@ -5,11 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.uci.ics.textdb.api.dataflow.IOperator;
-
 /**
- * This class provides a set of constants, and helper functions of these constants
- * that would be used in JsonPlanGenerator.
+ * This class provides a set of constants that would be used in JsonPlanGenerator.
  * 
  * @author Zuozhi Wang
  *
@@ -54,47 +51,6 @@ public class JsonPlanGenConstants {
     static {
         operatorBuilderMap = new HashMap<>();
         operatorBuilderMap.put("KeywordMatcher".toLowerCase(), KeywordMatcherBuilder.class);
-    }
-
-    /**
-     * This function checks if a string is a valid operator (case insensitive).
-     * 
-     * @param operatorStr
-     * @return true if the string is an operator
-     */
-    public static boolean isValidOperator(String operatorStr) {
-        return operatorList.stream().anyMatch(str -> str.toLowerCase().equals(operatorStr.toLowerCase()));
-    }
-
-    /**
-     * This function checks if a string is a valid attribute type (case
-     * insensitive).
-     * 
-     * @param attributeType
-     * @return true if the string is an attribute type
-     */
-    public static boolean isValidAttributeType(String attributeType) {
-        return attributeTypeList.stream().anyMatch(str -> str.toLowerCase().equals(attributeType.toLowerCase()));
-    }
-
-    /**
-     * This function builds the operator based on the type, id and properties.
-     * 
-     * @param operatorType
-     * @param operatorID
-     * @param operatorProperties
-     * @return operator that is built
-     * @throws Exception
-     */
-    public static IOperator buildOperator(String operatorType, String operatorID,
-            Map<String, String> operatorProperties) throws Exception {
-
-        Class<? extends OperatorBuilder> operatorBuilderClass = operatorBuilderMap.get(operatorType.toLowerCase());
-        OperatorBuilder operatorBuilder = operatorBuilderClass
-                .getConstructor(String.class, Map.class)
-                .newInstance(operatorID, operatorProperties);
-        
-        return operatorBuilder.build();
     }
 
 }

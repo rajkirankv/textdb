@@ -7,6 +7,7 @@ import java.util.Map;
 import org.json.*;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
+import edu.uci.ics.textdb.jsonplangen.JsonPlanGenUtils;
 
 /**
  * JsonPlanGenerator generates a query plan according to a query model in JSON format.
@@ -96,7 +97,7 @@ public class JsonPlanGenerator {
         Iterator<Object> arrayIterator = operatorJsonArray.iterator();
         while (arrayIterator.hasNext()) {
             Object operatorObject = arrayIterator.next();
-            assert(operatorObject instanceof JSONObject);
+            JsonPlanGenUtils.planGenAssert(operatorObject instanceof JSONObject, "invalid JSON format");
             processOperator((JSONObject) operatorObject);
 
         }
@@ -111,12 +112,14 @@ public class JsonPlanGenerator {
         String operatorType = operatorJsonObject.getString(OPERATOR_TYPE);
         
         // assert operatorID and operatorType exist
-        assert(operatorID != null && ! operatorID.trim().isEmpty());
-        assert(operatorType != null && ! operatorType.trim().isEmpty());
+        JsonPlanGenUtils.planGenAssert(operatorID != null, "operatorID doesn't exist");
+        JsonPlanGenUtils.planGenAssert(! operatorID.trim().isEmpty(), "operatorID is empty");
+        JsonPlanGenUtils.planGenAssert(operatorType != null, "operatorType doesn't exist");
+        JsonPlanGenUtils.planGenAssert(!  operatorType.trim().isEmpty(), "operatorType is empty");
         
         // assert operatorID and operatorType are valid
-        assert(JsonPlanGenConstants.isValidOperator(operatorType));
-        assert(! operatorMap.keySet().contains(operatorID));
+        JsonPlanGenUtils.planGenAssert(JsonPlanGenUtils.isValidOperator(operatorType), "operatorType is not valid");
+        JsonPlanGenUtils.planGenAssert(! operatorMap.keySet().contains(operatorID), "duplicate operatorID, each ID must be unique");
         
         JSONObject operatorPropertiesObject = operatorJsonObject.getJSONObject(OPERATOR_PROPERTIES);        
         Map<String, String> operatorProperties = new HashMap<>();
@@ -127,7 +130,7 @@ public class JsonPlanGenerator {
             }
         }
               
-        IOperator operator = JsonPlanGenConstants.buildOperator(operatorType, operatorID, operatorProperties);
+        IOperator operator = JsonPlanGenUtils.buildOperator(operatorType, operatorID, operatorProperties);
         operatorMap.put(operatorID, operator);   
     }
     

@@ -94,8 +94,9 @@ public abstract class OperatorBuilder {
         List<String> attributeNames = splitAttributes(attributeNamesStr);
         List<String> attributeTypes = splitAttributes(attributeTypesStr);
 
-        assert (attributeNames.size() == attributeTypes.size());
-        assert (attributeTypes.stream().allMatch(typeStr -> JsonPlanGenConstants.isValidAttributeType(typeStr)));
+        JsonPlanGenUtils.planGenAssert(attributeNames.size() == attributeTypes.size(), "attribute names and attribute types are not coherent");
+        JsonPlanGenUtils.planGenAssert(attributeTypes.stream().allMatch(typeStr -> JsonPlanGenUtils.isValidAttributeType(typeStr))
+                ,"attribute type is not valid");
 
         List<Attribute> attributeList = IntStream.range(0, attributeNames.size()) // for each index in the list
                 .mapToObj(i -> constructAttribute(attributeNames.get(i), attributeTypes.get(i))) // construct an attribute

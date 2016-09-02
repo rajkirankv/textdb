@@ -10,6 +10,7 @@ import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
+import edu.uci.ics.textdb.common.exception.PlanGenException;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 import edu.uci.ics.textdb.jsonplangen.JsonPlanGenerator;
 import junit.framework.Assert;
@@ -71,6 +72,12 @@ public class JsonPlannGeneratorTest {
         Assert.assertEquals(KeywordMatchingType.SUBSTRING_SCANBASED, keywordIrvine.getPredicate().getOperatorType());
         Assert.assertEquals(10, keywordIrvine.getLimit());
         Assert.assertEquals(2, keywordIrvine.getOffset());
+    }
+    
+    @Test(expected = PlanGenException.class)
+    public void testInvalidKeywordMatcher1() throws Exception {
+        JsonPlanGenerator planGen = new JsonPlanGenerator();
+        planGen.generateQueryPlan(SampleJsonQuery.sampleInvalidJsonQueryKeywordMatcher);
     }
 
 }

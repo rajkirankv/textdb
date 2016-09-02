@@ -42,13 +42,13 @@ public class KeywordMatcherBuilder extends OperatorBuilder {
         String matchingTypeStr = getRequiredProperty(MATCHING_TYPE);
 
         // check if keyword is empty
-        assert (!keyword.trim().isEmpty());
+        JsonPlanGenUtils.planGenAssert(!keyword.trim().isEmpty(), "keyword is empty");
 
         // generate attribute list
         List<Attribute> attributeList = constructAttributeList();
 
         // generate matching type
-        assert (isValidKeywordMatchingType(matchingTypeStr));
+        JsonPlanGenUtils.planGenAssert(isValidKeywordMatchingType(matchingTypeStr), "matching type is not valid");
         KeywordMatchingType matchingType = KeywordMatchingType.valueOf(matchingTypeStr.toUpperCase());
 
         // build KeywordMatcher

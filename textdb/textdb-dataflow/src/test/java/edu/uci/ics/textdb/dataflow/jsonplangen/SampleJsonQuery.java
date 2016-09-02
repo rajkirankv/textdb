@@ -198,6 +198,25 @@ public class SampleJsonQuery {
             "}\n" + 
             "";
     
+    public static String sampleInvalidJsonQueryKeywordMatcher = "{\n" + 
+            "    \"operators\" : [\n" + 
+            "        {\n" + 
+            "            \"id\" : \"keyword_zika\",\n" + 
+            "            \"operatorType\" : \"KeywordMatcher\",\n" + 
+            "            \"properties\" : {\n" + 
+            "                \"keyword\" : \"\",\n" + 
+            "                \"attributeNames\" : \"content\",\n" + 
+            "                \"attributeTypes\" : \"text\",\n" + 
+            "                \"matchingType\" : \"conjunction_indexbased\"\n" + 
+            "            }\n" + 
+            "        }\n" + 
+            "    ],\n" + 
+            "\n" + 
+            "    \"links\" : [\n" + 
+            "    ]\n" + 
+            "}\n" + 
+            "";
+    
     public static String sampleJsonQueryRegexMatcher = "{\n" + 
             "    \"operators\" : [\n" + 
             "        {\n" + 
