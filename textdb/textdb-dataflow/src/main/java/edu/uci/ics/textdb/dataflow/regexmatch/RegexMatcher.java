@@ -225,10 +225,6 @@ public class RegexMatcher extends AbstractSingleInputOperator {
     public String getRegex() {
         return this.regex;
     }
-    
-    public RegexPredicate getPredicate() {
-        return this.regexPredicate;
-    }
 
     @Override
     protected void cleanUp() throws DataFlowException {        
