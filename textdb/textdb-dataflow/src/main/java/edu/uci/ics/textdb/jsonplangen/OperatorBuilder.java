@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.queryplanner;
+package edu.uci.ics.textdb.jsonplangen;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
+import edu.uci.ics.textdb.common.exception.PlanGenException;
 
 public abstract class OperatorBuilder {
     
@@ -30,11 +31,11 @@ public abstract class OperatorBuilder {
     
     public abstract IOperator build() throws Exception;
     
-    protected String getRequiredProperty(String key) throws ParseException {
+    protected String getRequiredProperty(String key) throws PlanGenException {
         if (operatorProperties.containsKey(key)) {
             return operatorProperties.get(key);
         } else {
-            throw new ParseException(operatorID+" missing required key "+key);
+            throw new PlanGenException(operatorID+" missing required key "+key);
         }
     }
     
@@ -47,7 +48,7 @@ public abstract class OperatorBuilder {
         List<String> attributeTypes = splitAttributes(attributeTypesStr);
         
         assert(attributeNames.size() == attributeTypes.size());
-        assert(attributeTypes.stream().allMatch(typeStr -> JsonPlannerConstants.isValidAttributeType(typeStr)));
+        assert(attributeTypes.stream().allMatch(typeStr -> JsonPlanGenConstants.isValidAttributeType(typeStr)));
         
         List<Attribute> attributeList = IntStream.range(0, attributeNames.size())               // for each index in the list
                 .mapToObj(i -> constructAttribute(attributeNames.get(i), attributeTypes.get(i)))// construct an attribute

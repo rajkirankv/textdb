@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.queryplanner;
+package edu.uci.ics.textdb.jsonplangen;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,7 +10,7 @@ import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
 
-public class JsonPlanner {
+public class JsonPlanGenerator {
     
     private static final String OPERATORS = "operators";
     private static final String LINKS = "links";
@@ -22,7 +22,7 @@ public class JsonPlanner {
     private HashMap<String, IOperator> operatorMap;
     
     
-    public JsonPlanner() {
+    public JsonPlanGenerator() {
         operatorMap = new HashMap<>();    
     }
     
@@ -34,8 +34,7 @@ public class JsonPlanner {
         JSONArray linksJsonArray = jsonObject.getJSONArray(LINKS);
         
         buildOperators(operatorJsonArray);
-        
-        
+                
     }
     
     private void buildOperators(JSONArray operatorJsonArray) throws Exception {
@@ -58,7 +57,7 @@ public class JsonPlanner {
         
         // assert operatorID and operatorType are valid
         // TODO: case sensitive or not ?
-        assert(JsonPlannerConstants.isValidOperator(operatorType));
+        assert(JsonPlanGenConstants.isValidOperator(operatorType));
         assert(! operatorMap.keySet().contains(operatorID));
         
         JSONObject operatorPropertiesObject = operatorJsonObject.getJSONObject(OPERATOR_PROPERTIES);        
@@ -70,7 +69,7 @@ public class JsonPlanner {
             }
         }
               
-        IOperator operator = JsonPlannerConstants.buildOperator(operatorType, operatorID, operatorProperties);
+        IOperator operator = JsonPlanGenConstants.buildOperator(operatorType, operatorID, operatorProperties);
         operatorMap.put(operatorID, operator);
         
         if (operator instanceof KeywordMatcher) {

@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.queryplanner;
+package edu.uci.ics.textdb.dataflow.jsonplangen;
 
 public class SampleJsonQuery {
     

@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.queryplanner;
+package edu.uci.ics.textdb.jsonplangen;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.Map;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 
-public class JsonPlannerConstants {
+public class JsonPlanGenConstants {
     
     public static final List<String> operatorList = Arrays.asList(
             "IndexBasedSource",
@@ -36,8 +36,8 @@ public class JsonPlannerConstants {
     static {
         operatorBuilderMap = new HashMap<>();
         operatorBuilderMap.put("KeywordMatcher".toLowerCase(), KeywordMatcherBuilder.class);
-        operatorBuilderMap.put("RegexMatcher".toLowerCase(), RegexMatcherBuilder.class);
     }
+    
     
     public static boolean isValidOperator(String operatorStr) {
         return operatorList.stream().anyMatch(str -> str.toLowerCase().equals(operatorStr.toLowerCase()));
@@ -53,9 +53,5 @@ public class JsonPlannerConstants {
         return operatorBuilder.build();
     }
     
-    
-    
-    
-//    public static HashMap<String, >
 
 }

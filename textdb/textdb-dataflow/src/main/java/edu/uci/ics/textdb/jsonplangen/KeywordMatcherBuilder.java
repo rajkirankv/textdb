@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.queryplanner;
+package edu.uci.ics.textdb.jsonplangen;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -7,6 +7,7 @@ import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.common.constants.DataConstants;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
+import edu.uci.ics.textdb.common.exception.PlanGenException;
 import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 
@@ -16,7 +17,7 @@ public class KeywordMatcherBuilder extends OperatorBuilder {
     public static final String MATCHING_TYPE = "matchingType";
 
     @Override
-    public KeywordMatcher build() throws ParseException, DataFlowException {
+    public KeywordMatcher build() throws PlanGenException, DataFlowException {
         String keyword = getRequiredProperty(KEYWORD);
         String attributeNamesStr = getRequiredProperty(ATTRIBUTE_NAMES);
         String attributeTypesStr = getRequiredProperty(ATTRIBUTE_TYPES);
