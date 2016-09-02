@@ -2,7 +2,8 @@ package edu.uci.ics.textdb.common.exception;
 
 public class PlanGenException extends Exception {
 
-    private static final long serialVersionUID = -5670429837390859597L;
+    // auto generated serial version UIDs
+    private static final long serialVersionUID = -9145104915599667725L;
 
     public PlanGenException(String errorMessage, Throwable throwable) {
         super(errorMessage, throwable);
