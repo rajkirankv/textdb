@@ -72,9 +72,9 @@ public class JsonPlanGenConstants {
      */
     public static IOperator buildOperator(String operatorType, String operatorID,
             Map<String, String> operatorProperties) throws Exception {
-        Constructor<? extends OperatorBuilder> operatorBuilderConstructor = operatorBuilderMap
-                .get(operatorType.toLowerCase()).getConstructor(String.class, Map.class);
-        OperatorBuilder operatorBuilder = operatorBuilderConstructor.newInstance(operatorID, operatorProperties);
+
+        OperatorBuilder operatorBuilder = operatorBuilderMap.get(operatorType.toLowerCase())
+                .getConstructor(String.class, Map.class).newInstance(operatorID, operatorProperties);
         return operatorBuilder.build();
     }
 
