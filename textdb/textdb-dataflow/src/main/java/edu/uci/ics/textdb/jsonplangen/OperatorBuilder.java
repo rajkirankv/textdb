@@ -13,18 +13,18 @@ import edu.uci.ics.textdb.common.exception.PlanGenException;
 
 /**
  * OperatorBuilder is a base abstract class for building an operator based on
- * its properties. Sub classes needs to implement the build() function, which
- * builds the IOperator object and returns it.
+ * its properties. Subclasses need to implement the build() function, which
+ * builds the IOperator object to return.
  * 
  * This abstract class defines some commonly used variables:  
- * operatorID: a string representing operator's ID
- * operatorProperties: a map of key-value pairs representing operator's properties
+ *   operatorID: a string representing operator's ID
+ *   operatorProperties: a map of key-value pairs representing the operator's properties
  *  
  * OperatorBuilder currently offers helper functions for the following properties:
- * ATTRIBUTE_NAMES (required to generate attribute list)
- * ATTRIBUTE_TYPES (required to generate attribute list)
- * LIMIT  (often optional)
- * OFFSET (often optional)
+ *   ATTRIBUTE_NAMES (required to generate attribute list)
+ *   ATTRIBUTE_TYPES (required to generate attribute list)
+ *   LIMIT  (often optional)
+ *   OFFSET (often optional)
  * 
  * @author Zuozhi Wang
  *
@@ -53,13 +53,12 @@ public abstract class OperatorBuilder {
     public abstract IOperator build() throws Exception;
 
     /**
-     * This function returns a property that is required. An exception is thrown
-     * if the operator properties doens't contain the key.
+     * This function returns a required property. An exception is thrown
+     * if the operator properties don't contain the key.
      * 
      * @param key
      * @return value
-     * @throws PlanGenException,
-     *             if the operator properties doens't contain the key.
+     * @throws PlanGenException, if the operator properties do not contain the key.
      */
     protected String getRequiredProperty(String key) throws PlanGenException {
         if (operatorProperties.containsKey(key)) {
@@ -70,11 +69,11 @@ public abstract class OperatorBuilder {
     }
 
     /**
-     * This function returns a property that is optional. Null will be returned
-     * if the operator properties doens't contain the key.
+     * This function returns an optional property. Null will be returned
+     * if the operator properties don't contain the key.
      * 
      * @param key
-     * @return value, null if the operator properties doens't contain the key.
+     * @return value, null if the operator properties do not contain the key.
      */
     protected String getOptionalProperty(String key) {
         return operatorProperties.get(key);
@@ -117,8 +116,8 @@ public abstract class OperatorBuilder {
     }
 
     /**
-     * This function finds limit in operator properties, return null if not
-     * found.
+     * This function finds the "limit" value in the operator's properties.
+     * It returns null if the value is not found.
      * 
      * @return limit, null if not found
      * @throws PlanGenException
@@ -136,8 +135,8 @@ public abstract class OperatorBuilder {
     }
 
     /**
-     * This function finds offset in operator properties, return null if not
-     * found.
+     * This function finds the "offset" value in the operator's properties.
+     * It returns null if the value is not found.
      * 
      * @return offset, null if not found
      * @throws PlanGenException

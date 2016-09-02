@@ -18,8 +18,8 @@ import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
  * Besides commonly used properties that are defined in OperatorBuilder, 
  * KeywordMatcherBuilder currently needs the following properties:
  * 
- * keyword (required)
- * matchingType (required)
+ *   keyword (required)
+ *   matchingType (required)
  * 
  * @author Zuozhi Wang
  *

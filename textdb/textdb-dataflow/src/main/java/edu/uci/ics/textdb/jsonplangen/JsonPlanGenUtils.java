@@ -9,7 +9,7 @@ import edu.uci.ics.textdb.common.constants.OperatorConstants;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
 
 /**
- * This class provides a set of helper functions that are commonly used in generating plan.
+ * This class provides a set of helper functions that are commonly used in plan generation.
  * @author Zuozhi Wang
  *
  */
@@ -46,8 +46,7 @@ public class JsonPlanGenUtils {
     }
 
     /**
-     * This function checks if a string is a valid attribute type (case
-     * insensitive).
+     * This function checks if a string is a valid attribute type (case insensitive).
      * 
      * @param attributeType
      * @return true if the string is an attribute type
@@ -57,7 +56,7 @@ public class JsonPlanGenUtils {
     }
 
     /**
-     * This function builds the operator based on the type, id and properties.
+     * This function builds the operator based on the type, id, and properties.
      * 
      * @param operatorType
      * @param operatorID

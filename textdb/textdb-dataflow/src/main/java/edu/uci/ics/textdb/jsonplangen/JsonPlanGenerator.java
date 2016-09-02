@@ -18,14 +18,14 @@ import edu.uci.ics.textdb.jsonplangen.JsonPlanGenUtils;
  * links: a list of links from an operator to another.
  * 
  * each operator contains three attributes:
- * id: an unique ID of this operator
- * operatorType: type of the operator (for example, KeywordMatcher, RegexMatcher)
- * properties: properties that this operators needs (for example, keyword, regex)
- * properties are treated as flat string key-value pairs.
+ *   id: a unique ID of this operator
+ *   operatorType: type of the operator (e.g., KeywordMatcher, RegexMatcher)
+ *   properties: properties needed by this operator (e.g., keyword, regex)
+ *              properties are treated as unnested key-value string pairs.
  * 
  * each link contains two attributes:
- * from: operatorID of the link's origin
- * to:   operatorID of the link's destination
+ *   from: operatorID of the link's origin
+ *   to:   operatorID of the link's destination
  * 
  * Sample query format:
  * {
@@ -104,8 +104,10 @@ public class JsonPlanGenerator {
     }
     
     /*
-     * Each operator will have a unique ID (String), operatorType (String), and some operator-specific properties (JSONObject).
-     * Properties are a set of string key-value pairs to define some required and optional properties that an operator needs.
+     * Each operator has a unique ID (String), operatorType (String), 
+     * and some operator-specific properties (JSONObject).
+     * Properties are a set of key-value string pairs to define 
+     * some required and optional properties needed by an operator.
      */
     private void processOperator(JSONObject operatorJsonObject) throws Exception {
         String operatorID = operatorJsonObject.getString(OPERATOR_ID);
@@ -119,6 +121,7 @@ public class JsonPlanGenerator {
         
         // assert operatorID and operatorType are valid
         JsonPlanGenUtils.planGenAssert(JsonPlanGenUtils.isValidOperator(operatorType), "operatorType is not valid");
+        // TODO: change ID to case insensitive
         JsonPlanGenUtils.planGenAssert(! operatorMap.keySet().contains(operatorID), "duplicate operatorID, each ID must be unique");
         
         JSONObject operatorPropertiesObject = operatorJsonObject.getJSONObject(OPERATOR_PROPERTIES);        
