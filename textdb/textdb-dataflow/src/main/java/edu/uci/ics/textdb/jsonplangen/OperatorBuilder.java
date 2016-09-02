@@ -26,7 +26,7 @@ import edu.uci.ics.textdb.common.exception.PlanGenException;
  * LIMIT  (often optional)
  * OFFSET (often optional)
  * 
- * @author Zuozhi Wang (zuozhiw)
+ * @author Zuozhi Wang
  *
  */
 public abstract class OperatorBuilder {

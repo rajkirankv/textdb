@@ -14,20 +14,18 @@ import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
 import edu.uci.ics.textdb.jsonplangen.JsonPlanGenerator;
 import junit.framework.Assert;
 
+/**
+ * Tests for JsonPlannerGenerator
+ * 
+ * @author Zuozhi Wang
+ *
+ */
 public class JsonPlannGeneratorTest {
-    
-//    public static void main(String[] args) throws Exception {
-//        new JsonPlanGenerator().generateQueryPlan(SampleJsonQuery.sampleJsonQueryKeywordMatcher);
-//        
-//        
-//    }
-    
+
     
     /*
      * Test generating a KeywordMatcher according to JSON query.
      * JSON query only contains keyword matchers. Links of operators are not tested here.
-     * 
-     * 
      */
     @Test
     public void testGenerateKeywordMatcher() throws Exception {

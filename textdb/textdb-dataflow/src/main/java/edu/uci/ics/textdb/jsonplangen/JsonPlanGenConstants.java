@@ -8,8 +8,10 @@ import java.util.Map;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 
 /**
+ * This class provides a set of constants, and helper functions of these constants
+ * that would be used in JsonPlanGenerator.
  * 
- * @author Zuozhi Wang (zuozhiw)
+ * @author Zuozhi Wang
  *
  */
 public class JsonPlanGenConstants {

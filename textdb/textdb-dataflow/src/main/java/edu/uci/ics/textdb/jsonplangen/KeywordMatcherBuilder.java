@@ -21,7 +21,7 @@ import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
  * keyword (required)
  * matchingType (required)
  * 
- * @author zuozhi
+ * @author Zuozhi Wang
  *
  */
 public class KeywordMatcherBuilder extends OperatorBuilder {
