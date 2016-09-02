@@ -17,6 +17,7 @@ public class JsonPlanGenerator {
     private static final String OPERATOR_ID = "id";
     private static final String OPERATOR_PROPERTIES = "properties";
     
+    // operatorMap stores the operators generated according to their IDs
     private HashMap<String, IOperator> operatorMap;
     
     
@@ -24,7 +25,11 @@ public class JsonPlanGenerator {
         operatorMap = new HashMap<>();    
     }
     
-    
+    /**
+     * This function generates a query plan according to the input JSON file.
+     * @param jsonQueryString
+     * @throws Exception
+     */
     public void generateQueryPlan(String jsonQueryString) throws Exception {
         JSONObject jsonObject = new JSONObject(jsonQueryString);
         
@@ -33,6 +38,10 @@ public class JsonPlanGenerator {
         buildOperators(operatorJsonArray);                
     }
     
+    /*
+     * The first step of plan generation is to build operators.
+     * Operators are defined under "operators" JSON array.
+     */
     private void buildOperators(JSONArray operatorJsonArray) throws Exception {
         Iterator<Object> arrayIterator = operatorJsonArray.iterator();
         while (arrayIterator.hasNext()) {
@@ -43,6 +52,10 @@ public class JsonPlanGenerator {
         }
     }
     
+    /*
+     * Each operator will have a unique ID (String), operatorType (String), and some operator-specific properties (JSONObject).
+     * Properties are a set of string key-value pairs to define some required and optional properties that an operator needs.
+     */
     private void processOperator(JSONObject operatorJsonObject) throws Exception {
         String operatorID = operatorJsonObject.getString(OPERATOR_ID);
         String operatorType = operatorJsonObject.getString(OPERATOR_TYPE);
@@ -52,7 +65,6 @@ public class JsonPlanGenerator {
         assert(operatorType != null && ! operatorType.trim().isEmpty());
         
         // assert operatorID and operatorType are valid
-        // TODO: case sensitive or not ?
         assert(JsonPlanGenConstants.isValidOperator(operatorType));
         assert(! operatorMap.keySet().contains(operatorID));
         
@@ -66,9 +78,7 @@ public class JsonPlanGenerator {
         }
               
         IOperator operator = JsonPlanGenConstants.buildOperator(operatorType, operatorID, operatorProperties);
-        operatorMap.put(operatorID, operator);
-
-        
+        operatorMap.put(operatorID, operator);   
     }
     
     
