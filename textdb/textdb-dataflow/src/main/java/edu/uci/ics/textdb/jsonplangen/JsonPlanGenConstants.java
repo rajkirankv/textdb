@@ -1,6 +1,5 @@
 package edu.uci.ics.textdb.jsonplangen;
 
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -18,18 +17,29 @@ public class JsonPlanGenConstants {
     /**
      * A list of all operators of TextDB.
      */
-    public static final List<String> operatorList = Arrays.asList("IndexBasedSource", "ScanBasedSource",
+    public static final List<String> operatorList = Arrays.asList(
+            "IndexBasedSource", 
+            "ScanBasedSource",
 
-            "KeywordMatcher", "RegexMatcher", "FuzzyTokenMatcher", "NlpExtractor",
+            "KeywordMatcher", 
+            "RegexMatcher", 
+            "FuzzyTokenMatcher", 
+            "NlpExtractor",
 
             "Join",
 
-            "IndexSink", "FileSink");
+            "IndexSink", 
+            "FileSink");
 
     /**
      * A list of all attribute types (field types) of TextDB.
      */
-    public static final List<String> attributeTypeList = Arrays.asList("Integer", "Double", "Date", "String", "Text");
+    public static final List<String> attributeTypeList = Arrays.asList(
+            "Integer", 
+            "Double", 
+            "Date", 
+            "String", 
+            "Text");
 
     /**
      * A map of operators to the their builder classes.
@@ -73,8 +83,11 @@ public class JsonPlanGenConstants {
     public static IOperator buildOperator(String operatorType, String operatorID,
             Map<String, String> operatorProperties) throws Exception {
 
-        OperatorBuilder operatorBuilder = operatorBuilderMap.get(operatorType.toLowerCase())
-                .getConstructor(String.class, Map.class).newInstance(operatorID, operatorProperties);
+        Class<? extends OperatorBuilder> operatorBuilderClass = operatorBuilderMap.get(operatorType.toLowerCase());
+        OperatorBuilder operatorBuilder = operatorBuilderClass
+                .getConstructor(String.class, Map.class)
+                .newInstance(operatorID, operatorProperties);
+        
         return operatorBuilder.build();
     }
 
