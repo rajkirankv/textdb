@@ -1,8 +1,11 @@
 package edu.uci.ics.textdb.jsonplangen;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
+import edu.uci.ics.textdb.common.constants.DataTypeConstants;
+import edu.uci.ics.textdb.common.constants.OperatorConstants;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
 
 /**
@@ -11,6 +14,16 @@ import edu.uci.ics.textdb.common.exception.PlanGenException;
  *
  */
 public class JsonPlanGenUtils {
+    
+    /**
+     * A map of operators to the their builder classes.
+     */
+    public static final Map<String, Class<? extends OperatorBuilder>> operatorBuilderMap;
+    static {
+        operatorBuilderMap = new HashMap<>();
+        operatorBuilderMap.put("KeywordMatcher".toLowerCase(), KeywordMatcherBuilder.class);
+    }
+    
     
     public static void planGenAssert(boolean assertBoolean) throws PlanGenException {
         planGenAssert(assertBoolean, "");
@@ -29,7 +42,7 @@ public class JsonPlanGenUtils {
      * @return true if the string is an operator
      */
     public static boolean isValidOperator(String operatorStr) {
-        return JsonPlanGenConstants.operatorList.stream().anyMatch(str -> str.toLowerCase().equals(operatorStr.toLowerCase()));
+        return OperatorConstants.operatorList.stream().anyMatch(str -> str.toLowerCase().equals(operatorStr.toLowerCase()));
     }
 
     /**
@@ -40,7 +53,7 @@ public class JsonPlanGenUtils {
      * @return true if the string is an attribute type
      */
     public static boolean isValidAttributeType(String attributeType) {
-        return JsonPlanGenConstants.attributeTypeList.stream().anyMatch(str -> str.toLowerCase().equals(attributeType.toLowerCase()));
+        return DataTypeConstants.attributeTypeList.stream().anyMatch(str -> str.toLowerCase().equals(attributeType.toLowerCase()));
     }
 
     /**
@@ -55,7 +68,7 @@ public class JsonPlanGenUtils {
     public static IOperator buildOperator(String operatorType, String operatorID,
             Map<String, String> operatorProperties) throws Exception {
 
-        Class<? extends OperatorBuilder> operatorBuilderClass = JsonPlanGenConstants.operatorBuilderMap.get(operatorType.toLowerCase());
+        Class<? extends OperatorBuilder> operatorBuilderClass = operatorBuilderMap.get(operatorType.toLowerCase());
         OperatorBuilder operatorBuilder = operatorBuilderClass
                 .getConstructor(String.class, Map.class)
                 .newInstance(operatorID, operatorProperties);
