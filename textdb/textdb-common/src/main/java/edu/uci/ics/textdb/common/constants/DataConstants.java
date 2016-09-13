@@ -92,4 +92,8 @@ public class DataConstants {
         return new StandardAnalyzer();
     }
 
+    public static Analyzer getStandardAnalyzer() {
+        return new StandardAnalyzer();
+    }
+
 }
