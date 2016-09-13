@@ -87,8 +87,10 @@ public class JsonPlanGenerator {
         JSONObject jsonObject = new JSONObject(jsonQueryString);
         
         JSONArray operatorJsonArray = jsonObject.getJSONArray(OPERATORS);
+        JSONArray linkJsonArray = jsonObject.getJSONArray(LINKS);
         
-        buildOperators(operatorJsonArray);                
+        buildOperators(operatorJsonArray);
+        buildLinks(linkJsonArray);
     }
     
     /*
@@ -141,6 +143,16 @@ public class JsonPlanGenerator {
     }
     
     private void buildLinks(JSONArray linkJSONArray) throws Exception {
+        Iterator<Object> arrayIterator = linkJSONArray.iterator();
+        while (arrayIterator.hasNext()) {
+            Object linkObject = arrayIterator.next();
+            PlanGenUtils.planGenAssert(linkObject instanceof JSONObject, "invalid JSON format");
+            
+
+        }
+    }
+    
+    private void linkSanityCheck() {
         
     }
     
