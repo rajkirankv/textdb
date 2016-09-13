@@ -12,7 +12,7 @@ import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
-import edu.uci.ics.textdb.jsonplangen.JsonPlanGenerator;
+import edu.uci.ics.textdb.plangen.JsonPlanGenerator;
 import junit.framework.Assert;
 
 /**

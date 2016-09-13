@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.jsonplangen;
+package edu.uci.ics.textdb.plangen;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,7 +7,7 @@ import java.util.Map;
 import org.json.*;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
-import edu.uci.ics.textdb.jsonplangen.JsonPlanGenUtils;
+
 
 /**
  * JsonPlanGenerator generates a query plan according to a query model in JSON format.
@@ -70,10 +70,12 @@ public class JsonPlanGenerator {
     
     // operatorMap stores the operators generated according to their IDs
     private HashMap<String, IOperator> operatorMap;
+    private HashMap<String, String> operatorTypeMap;
     
     
     public JsonPlanGenerator() {
         operatorMap = new HashMap<>();    
+        operatorTypeMap = new HashMap<>();
     }
     
     /**
@@ -97,7 +99,7 @@ public class JsonPlanGenerator {
         Iterator<Object> arrayIterator = operatorJsonArray.iterator();
         while (arrayIterator.hasNext()) {
             Object operatorObject = arrayIterator.next();
-            JsonPlanGenUtils.planGenAssert(operatorObject instanceof JSONObject, "invalid JSON format");
+            PlanGenUtils.planGenAssert(operatorObject instanceof JSONObject, "invalid JSON format");
             processOperator((JSONObject) operatorObject);
 
         }
@@ -114,15 +116,15 @@ public class JsonPlanGenerator {
         String operatorType = operatorJsonObject.getString(OPERATOR_TYPE);
         
         // assert operatorID and operatorType exist
-        JsonPlanGenUtils.planGenAssert(operatorID != null, "operatorID doesn't exist");
-        JsonPlanGenUtils.planGenAssert(! operatorID.trim().isEmpty(), "operatorID is empty");
-        JsonPlanGenUtils.planGenAssert(operatorType != null, "operatorType doesn't exist");
-        JsonPlanGenUtils.planGenAssert(!  operatorType.trim().isEmpty(), "operatorType is empty");
+        PlanGenUtils.planGenAssert(operatorID != null, "operatorID doesn't exist");
+        PlanGenUtils.planGenAssert(! operatorID.trim().isEmpty(), "operatorID is empty");
+        PlanGenUtils.planGenAssert(operatorType != null, "operatorType doesn't exist");
+        PlanGenUtils.planGenAssert(!  operatorType.trim().isEmpty(), "operatorType is empty");
         
         // assert operatorID and operatorType are valid
-        JsonPlanGenUtils.planGenAssert(JsonPlanGenUtils.isValidOperator(operatorType), "operatorType is not valid");
+        PlanGenUtils.planGenAssert(PlanGenUtils.isValidOperator(operatorType), "operatorType is not valid");
         // TODO: change ID to case insensitive
-        JsonPlanGenUtils.planGenAssert(! operatorMap.keySet().contains(operatorID), "duplicate operatorID, each ID must be unique");
+        PlanGenUtils.planGenAssert(! operatorMap.keySet().contains(operatorID), "duplicate operatorID, each ID must be unique");
         
         JSONObject operatorPropertiesObject = operatorJsonObject.getJSONObject(OPERATOR_PROPERTIES);        
         Map<String, String> operatorProperties = new HashMap<>();
@@ -133,8 +135,13 @@ public class JsonPlanGenerator {
             }
         }
               
-        IOperator operator = JsonPlanGenUtils.buildOperator(operatorType, operatorID, operatorProperties);
+        IOperator operator = PlanGenUtils.buildOperator(operatorType, operatorProperties);
         operatorMap.put(operatorID, operator);   
+        operatorTypeMap.put(operatorID,operatorType);
+    }
+    
+    private void buildLinks(JSONArray linkJSONArray) throws Exception {
+        
     }
     
     
