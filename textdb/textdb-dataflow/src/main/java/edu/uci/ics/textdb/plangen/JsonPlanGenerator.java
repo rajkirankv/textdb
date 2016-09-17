@@ -68,14 +68,19 @@ public class JsonPlanGenerator {
     private static final String OPERATOR_ID = "id";
     private static final String OPERATOR_PROPERTIES = "properties";
     
+    private static final String FROM = "from";
+    private static final String TO = "to";
+    
     // operatorMap stores the operators generated according to their IDs
     private HashMap<String, IOperator> operatorMap;
     private HashMap<String, String> operatorTypeMap;
+    private OperatorDAG<String> operatorDAG;
     
     
     public JsonPlanGenerator() {
         operatorMap = new HashMap<>();    
         operatorTypeMap = new HashMap<>();
+        operatorDAG = new OperatorDAG();
     }
     
     /**
@@ -140,6 +145,7 @@ public class JsonPlanGenerator {
         IOperator operator = PlanGenUtils.buildOperator(operatorType, operatorProperties);
         operatorMap.put(operatorID, operator);   
         operatorTypeMap.put(operatorID,operatorType);
+        operatorDAG.addVertex(operatorID);
     }
     
     private void buildLinks(JSONArray linkJSONArray) throws Exception {
@@ -147,14 +153,20 @@ public class JsonPlanGenerator {
         while (arrayIterator.hasNext()) {
             Object linkObject = arrayIterator.next();
             PlanGenUtils.planGenAssert(linkObject instanceof JSONObject, "invalid JSON format");
+            JSONObject linkJsonObject = (JSONObject) linkObject;
             
-
+            String fromString = linkJsonObject.getString(FROM);
+            String toString = linkJsonObject.getString(TO);
+            
+            PlanGenUtils.planGenAssert(fromString != null, "from property doesn't exist");
+            PlanGenUtils.planGenAssert(! fromString.trim().isEmpty(), "from property is empty");
+            PlanGenUtils.planGenAssert(toString != null, "to property doesn't exist");
+            PlanGenUtils.planGenAssert(!  toString.trim().isEmpty(), "to property is empty");
+            
+            operatorDAG.addEdge(fromString, toString);
         }
     }
-    
-    private void linkSanityCheck() {
-        
-    }
+
     
     
     public Map<String, IOperator> getOperatorMap() {
