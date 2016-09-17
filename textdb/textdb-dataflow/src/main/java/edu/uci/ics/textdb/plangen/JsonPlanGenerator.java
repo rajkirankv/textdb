@@ -74,13 +74,13 @@ public class JsonPlanGenerator {
     // operatorMap stores the operators generated according to their IDs
     private HashMap<String, IOperator> operatorMap;
     private HashMap<String, String> operatorTypeMap;
-    private OperatorDAG<String> operatorDAG;
+    private OperatorGraph<String> operatorDAG;
     
     
     public JsonPlanGenerator() {
         operatorMap = new HashMap<>();    
         operatorTypeMap = new HashMap<>();
-        operatorDAG = new OperatorDAG();
+        operatorDAG = new OperatorGraph();
     }
     
     /**
@@ -162,6 +162,9 @@ public class JsonPlanGenerator {
             PlanGenUtils.planGenAssert(! fromString.trim().isEmpty(), "from property is empty");
             PlanGenUtils.planGenAssert(toString != null, "to property doesn't exist");
             PlanGenUtils.planGenAssert(!  toString.trim().isEmpty(), "to property is empty");
+            
+            PlanGenUtils.planGenAssert(operatorMap.containsKey(fromString), "from operator '"+fromString+"' doesn't exist");
+            PlanGenUtils.planGenAssert(operatorMap.containsKey(toString), "to operator '"+toString+"' doesn't exist");
             
             operatorDAG.addEdge(fromString, toString);
         }
