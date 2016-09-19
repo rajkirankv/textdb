@@ -195,24 +195,42 @@ public class OperatorGraph {
     }
     
     
-    private void checkOperatorOutputArity() {
-        for (String key : adjacencyList.keySet()) {
-            
-        }
-        
-        
-    }
-    
-    private void checkOperatorInputArity() {
+    private void checkOperatorInputArity() throws PlanGenException {
         HashMap<String, HashSet<String>> transposeAdjacencyList = new HashMap<>();
-        for (String key : adjacencyList.keySet()) {
-            transposeAdjacencyList.put(key, new HashSet<>());
+        for (String vertex : adjacencyList.keySet()) {
+            transposeAdjacencyList.put(vertex, new HashSet<>());
         }
-        for (String key : adjacencyList.keySet()) {
-            for (String value : adjacencyList.get(key)) {
-                transposeAdjacencyList.get(value).add(key);
+        for (String vertexOrigin : adjacencyList.keySet()) {
+            for (String vertexDestination : adjacencyList.get(vertexOrigin)) {
+                transposeAdjacencyList.get(vertexDestination).add(vertexOrigin);
             }
         }
+        
+        for (String vertex : transposeAdjacencyList.keySet()) {
+            int actualInputArity = transposeAdjacencyList.get(vertex).size();
+            PlanGenUtils.planGenAssert(
+                    OperatorArityConstants.checkInputArity(operatorTypeMap.get(vertex), actualInputArity),
+                    "Operator " + vertex + ": input arity doesn't match");
+        }
+    }
+    
+    /**
+     * This function checks if the output arity of "sink" operator match.
+     * 
+     * For other operators, output arity is not checked,  
+     * because an one to N connector will be automatically added if necessary.
+     * 
+     * @throws PlanGenException
+     */
+    private void checkOperatorOutputArity() throws PlanGenException {
+        for (String vertex : adjacencyList.keySet()) {
+            if (vertex.toLowerCase().contains("sink")) {
+                int actualOutputArity = adjacencyList.get(vertex).size();
+                PlanGenUtils.planGenAssert(
+                        OperatorArityConstants.checkOutputArity(operatorTypeMap.get(vertex), actualOutputArity),
+                        "Operator " + vertex + ": output arity doesn't match");
+            }
+        }    
     }
     
     
