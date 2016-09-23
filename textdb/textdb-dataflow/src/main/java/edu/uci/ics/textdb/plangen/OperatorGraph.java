@@ -76,10 +76,6 @@ public class OperatorGraph {
             String opeartorType = operatorTypeMap.get(operatorID);
             Map<String, String> operatorProperties = operatorPropertyMap.get(operatorID);
             
-            if (opeartorType.toLowerCase().endsWith("sink")) {
-                System.err.println("TODO: deal with sink");
-                continue;
-            }        
             IOperator operator = PlanGenUtils.buildOperator(opeartorType, operatorProperties);
             operatorObjectMap.put(operatorID, operator);
         }
@@ -224,15 +220,20 @@ public class OperatorGraph {
      */
     private void checkOperatorOutputArity() throws PlanGenException {
         for (String vertex : adjacencyList.keySet()) {
+            int actualOutputArity = adjacencyList.get(vertex).size();
+            int expectedOutputArity = OperatorArityConstants.fixedOutputArityMap.get(operatorTypeMap.get(vertex).toLowerCase());
+
             if (vertex.toLowerCase().contains("sink")) {
-                int actualOutputArity = adjacencyList.get(vertex).size();
                 PlanGenUtils.planGenAssert(
-                        OperatorArityConstants.checkOutputArity(operatorTypeMap.get(vertex), actualOutputArity),
-                        "Operator " + vertex + ": output arity doesn't match");
+                        actualOutputArity == expectedOutputArity,
+                        String.format("Sink %s should have %d output links, got %d.", vertex, expectedOutputArity, actualOutputArity));
+            } else {
+                PlanGenUtils.planGenAssert(
+                        actualOutputArity != 0,
+                        String.format("Operator %s should have at least %d output links, got 0.", vertex, expectedOutputArity)); 
             }
-        }    
+        }
     }
-    
     
     
     private void checkSource() {
