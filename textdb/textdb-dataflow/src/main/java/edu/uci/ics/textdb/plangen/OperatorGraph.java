@@ -1,12 +1,16 @@
 package edu.uci.ics.textdb.plangen;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 import edu.uci.ics.textdb.api.dataflow.IOperator;
+import edu.uci.ics.textdb.api.dataflow.ISink;
+import edu.uci.ics.textdb.api.plan.Plan;
 import edu.uci.ics.textdb.common.constants.OperatorConstants;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
+import edu.uci.ics.textdb.dataflow.connector.OneToNBroadcastConnector;
 
 /**
  * 
@@ -37,7 +41,9 @@ public class OperatorGraph {
         PlanGenUtils.planGenAssert(! operatorType.trim().isEmpty(), "operatorType is empty");
         
         PlanGenUtils.planGenAssert(! hasOperator(operatorID), "duplicate operatorID: "+operatorID);
-        PlanGenUtils.planGenAssert(PlanGenUtils.isValidOperator(operatorType), "invalid operatorType: "+operatorType+", must be one of "+OperatorConstants.operatorList);
+        PlanGenUtils.planGenAssert(PlanGenUtils.isValidOperator(operatorType), 
+                String.format("%s is an invalid operator type, it must be one of %s.", 
+                        operatorType, OperatorConstants.operatorList.toString()));
   
         operatorTypeMap.put(operatorID, operatorType);
         operatorPropertyMap.put(operatorID, operatorProperties);
@@ -51,8 +57,8 @@ public class OperatorGraph {
         PlanGenUtils.planGenAssert(! from.trim().isEmpty(), "\"from\" operator is empty");
         PlanGenUtils.planGenAssert(! to.trim().isEmpty(), "\"to\" operator is empty");
         
-        PlanGenUtils.planGenAssert(hasOperator(from), "operator " + from + " does not exist");
-        PlanGenUtils.planGenAssert(hasOperator(to), "operator " + to + " does not exist");
+        PlanGenUtils.planGenAssert(hasOperator(from), String.format("operator %s doesn't exist", from));
+        PlanGenUtils.planGenAssert(hasOperator(to), String.format("operator %s doesn't exist", to));
         
         adjacencyList.get(from).add(to);
     }
@@ -62,14 +68,18 @@ public class OperatorGraph {
     }
     
     
-    public void buildQueryPlan() throws Exception {
-        buildOperators();
-        
+    public Plan buildQueryPlan() throws Exception {
+        buildOperators();        
         validateOperatorGraph();
-        
         buildLinks();
+        ISink sink = getSinkOperator();
+        
+        Plan queryPlan = new Plan(sink);
+        return queryPlan;
     }
     
+
+
     private void buildOperators() throws Exception {
         for (String operatorID : adjacencyList.keySet()) {
             String opeartorType = operatorTypeMap.get(operatorID);
@@ -106,9 +116,79 @@ public class OperatorGraph {
     
     
     private void buildLinks() throws PlanGenException {
+        // pick a source operator as a starting point of graph traversal
+        String startVertex = adjacencyList.keySet().stream()
+                .filter(vertex -> operatorTypeMap.get(vertex).toLowerCase().contains("source"))
+                .findAny().orElse(null);
+        PlanGenUtils.planGenAssert(startVertex != null, "Build links error: operator graph doesn't have a source operator.");
         
+        HashSet<String> unvisitedVertices = new HashSet<>(adjacencyList.keySet());
+        HashSet<String> visitedVertices = new HashSet<>();
+                
+        while (true) {
+            buildLinkDfsVisit(startVertex, unvisitedVertices, visitedVertices);
+            
+            if (unvisitedVertices.isEmpty()) {
+                break;
+            } else {
+                startVertex = unvisitedVertices.iterator().next();
+            }
+        }
     }
     
+    private void buildLinkDfsVisit(String vertex, HashSet<String> unvisitedVertices, HashSet<String> visitedVertices) throws PlanGenException {
+        unvisitedVertices.remove(vertex);
+        IOperator currentOperator = operatorObjectMap.get(vertex);
+        int outputArity = adjacencyList.get(vertex).size();
+        if (outputArity > 1) {
+            OneToNBroadcastConnector oneToNConnector = new OneToNBroadcastConnector(outputArity);
+            oneToNConnector.setInputOperator(currentOperator);
+            int counter = 0;
+            for (String adjacentVertex : adjacencyList.get(vertex)) {
+                IOperator adjacentOperator = operatorObjectMap.get(adjacentVertex);
+                handleSetInputOperator(oneToNConnector.getOutputOperator(counter), adjacentOperator);
+                
+                if (unvisitedVertices.contains(adjacentVertex)) {
+                    connectivityDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
+                }
+            }
+        } else {
+            for (String adjacentVertex : adjacencyList.get(vertex)) {
+                IOperator adjacentOperator = operatorObjectMap.get(adjacentVertex);
+                handleSetInputOperator(currentOperator, adjacentOperator);
+
+                if (unvisitedVertices.contains(adjacentVertex)) {
+                    connectivityDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
+                }
+            }
+        }
+        
+        visitedVertices.add(vertex);      
+    }
+      
+    private ISink getSinkOperator() throws PlanGenException {
+        IOperator sinkOperator = adjacencyList.keySet().stream()
+                .filter(operator -> operatorTypeMap.get(operator).toLowerCase().contains("sink"))
+                .map(operator -> operatorObjectMap.get(operator))
+                .findFirst().orElse(null);
+        
+        PlanGenUtils.planGenAssert(sinkOperator != null, "Error: sink operator doesn't exist.");
+        PlanGenUtils.planGenAssert(sinkOperator instanceof ISink, "Error: sink operator's type doesn't match.");
+        
+        return (ISink) sinkOperator;
+    }
+    
+    
+    private void handleSetInputOperator(Object from, Object to) throws PlanGenException {
+        try {
+            to.getClass().getMethod("setInputOperator", IOperator.class).invoke(to, from);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
+                | IllegalArgumentException | InvocationTargetException e) {
+            throw new PlanGenException(e.getMessage(), e);
+        }  
+    }
+    
+        
     /*
      * This function detects if there are any operators not connected to the operator graph.
      * 
@@ -148,7 +228,7 @@ public class OperatorGraph {
             if (unvisitedVertices.contains(adjacentVertex)) {
                 connectivityDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
             }
-        }        
+        }
         visitedVertices.add(vertex);
     }
     
