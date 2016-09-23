@@ -12,7 +12,6 @@ import edu.uci.ics.textdb.common.exception.PlanGenException;
  * 
  * @author Zuozhi Wang
  *
- * @param <T>
  */
 public class OperatorGraph {
     
@@ -68,7 +67,7 @@ public class OperatorGraph {
         
         validateOperatorGraph();
         
-        
+        buildLinks();
     }
     
     private void buildOperators() throws Exception {
@@ -82,7 +81,10 @@ public class OperatorGraph {
 
     }
     
-    /**
+    /*
+     * This function validates the operator graph.
+     * It throws a PlanGenException if the operator graph fails to meet any of the requirements.
+     * 
      * The operator graph is a DAG (Directed Acyclic Graph).
      * 
      * The operator graph must satisfy the following requirements:
@@ -91,10 +93,7 @@ public class OperatorGraph {
      *   each operator must meet its input and output arity constraints.
      *   the operator graph has at least one source operator.
      *   the operator graph has exactly one sink.
-     *   
-     * PlanGenException is thrown if the operator graph fails to meet a requirement.
      * 
-     * @throws PlanGenException
      */
     private void validateOperatorGraph() throws PlanGenException {
         checkGraphConnectivity();
@@ -105,7 +104,12 @@ public class OperatorGraph {
         checkSinkOperator();
     }
     
-    /**
+    
+    private void buildLinks() throws PlanGenException {
+        
+    }
+    
+    /*
      * This function detects if there are any operators not connected to the operator graph.
      * 
      * It builds an undirected version of the operator graph, and then 
@@ -114,7 +118,6 @@ public class OperatorGraph {
      * 
      * PlanGenException is thrown if there is an operator not connected to the operator graph.
      * 
-     * @throws PlanGenException
      */
     private void checkGraphConnectivity() throws PlanGenException {
         HashMap<String, HashSet<String>> undirectedAdjacencyList = new HashMap<>(adjacencyList);
@@ -149,7 +152,7 @@ public class OperatorGraph {
         visitedVertices.add(vertex);
     }
     
-    /**
+    /*
      * This function detects if there are any cycles in the operator graph.
      * 
      * It uses a Depth First Search (DFS) algorithm to traverse the graph.
@@ -158,7 +161,6 @@ public class OperatorGraph {
      * 
      * PlanGenException is thrown if a cycle is detected in the graph.
      * 
-     * @throws PlanGenException
      */
     private void checkGraphCycle() throws PlanGenException {
         HashSet<String> unvisitedVertices = new HashSet<>(adjacencyList.keySet());
@@ -214,13 +216,12 @@ public class OperatorGraph {
         }
     }
     
-    /**
+    /*
      * This function checks if the output arity of "sink" operator match.
      * 
      * For other operators, output arity is not checked,  
      * because an one to N connector will be automatically added if necessary.
      * 
-     * @throws PlanGenException
      */
     private void checkOperatorOutputArity() throws PlanGenException {
         for (String vertex : adjacencyList.keySet()) {
@@ -262,10 +263,5 @@ public class OperatorGraph {
         PlanGenUtils.planGenAssert(sinkOperatorNumber == 1, 
                 String.format("There must be exaxtly one sink operator, got %d.", sinkOperatorNumber));
     }
-    
-    
-    
-
-
-    
+ 
 }
