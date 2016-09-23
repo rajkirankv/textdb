@@ -101,7 +101,8 @@ public class OperatorGraph {
         checkGraphCycle();
         checkOperatorInputArity();
         checkOperatorOutputArity();
-        
+        checkSourceOperator();
+        checkSinkOperator();
     }
     
     /**
@@ -190,7 +191,9 @@ public class OperatorGraph {
         visitingVertices.remove(vertex);
     }
     
-    
+    /*
+     * This function checks if the input arities of all operators match the expected input arities.
+     */
     private void checkOperatorInputArity() throws PlanGenException {
         HashMap<String, HashSet<String>> transposeAdjacencyList = new HashMap<>();
         for (String vertex : adjacencyList.keySet()) {
@@ -204,9 +207,10 @@ public class OperatorGraph {
         
         for (String vertex : transposeAdjacencyList.keySet()) {
             int actualInputArity = transposeAdjacencyList.get(vertex).size();
+            int expectedInputArity = OperatorArityConstants.fixedInputArityMap.get(operatorTypeMap.get(vertex));
             PlanGenUtils.planGenAssert(
-                    OperatorArityConstants.checkInputArity(operatorTypeMap.get(vertex), actualInputArity),
-                    "Operator " + vertex + ": input arity doesn't match");
+                    actualInputArity == expectedInputArity,
+                    String.format("Operator %s should have %d inputs, got %d.", vertex, expectedInputArity, actualInputArity));
         }
     }
     
@@ -235,13 +239,28 @@ public class OperatorGraph {
         }
     }
     
-    
-    private void checkSource() {
+    /*
+     * This function makes sure that the operator graph has at least one source operator
+     */
+    private void checkSourceOperator() throws PlanGenException {
+        boolean sourceExist = adjacencyList.keySet().stream()
+                .map(operator -> operatorTypeMap.get(operator))
+                .anyMatch(type -> type.toLowerCase().contains("source"));
         
+        PlanGenUtils.planGenAssert(sourceExist, "There must be at least one source operator.");
     }
     
-    private void checkSink() {
+    /*
+     * This function makes sure that the operator graph has exactly one sink operator.
+     */
+    private void checkSinkOperator() throws PlanGenException {
+        long sinkOperatorNumber = adjacencyList.keySet().stream()
+                .map(operator -> operatorTypeMap.get(operator))
+                .filter(operatorType -> operatorType.toLowerCase().contains("sink"))
+                .count();
         
+        PlanGenUtils.planGenAssert(sinkOperatorNumber == 1, 
+                String.format("There must be exaxtly one sink operator, got %d.", sinkOperatorNumber));
     }
     
     
