@@ -27,6 +27,7 @@ public class OperatorGraph {
 
     
     public OperatorGraph() {
+        operatorObjectMap = new HashMap<>();
         operatorTypeMap = new HashMap<>();
         operatorPropertyMap = new HashMap<>();
         adjacencyList = new HashMap<>();
@@ -77,8 +78,6 @@ public class OperatorGraph {
         Plan queryPlan = new Plan(sink);
         return queryPlan;
     }
-    
-
 
     private void buildOperators() throws Exception {
         for (String operatorID : adjacencyList.keySet()) {
@@ -88,7 +87,6 @@ public class OperatorGraph {
             IOperator operator = PlanGenUtils.buildOperator(opeartorType, operatorProperties);
             operatorObjectMap.put(operatorID, operator);
         }
-
     }
     
     /*
