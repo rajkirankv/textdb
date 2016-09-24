@@ -1,13 +1,11 @@
 package edu.uci.ics.textdb.plangen;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import org.json.JSONObject;
 import org.junit.Test;
 
-import edu.uci.ics.textdb.common.exception.PlanGenException;
+import edu.uci.ics.textdb.api.plan.Plan;
 import edu.uci.ics.textdb.plangen.operatorbuilder.FileSinkBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordMatcherBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.OperatorBuilderUtils;
@@ -16,7 +14,7 @@ import edu.uci.ics.textdb.plangen.operatorbuilder.RegexMatcherBuilder;
 public class OperatorGraphTest {
     
     @Test
-    public void OperatorGraphTest1() throws PlanGenException {
+    public void OperatorGraphTest1() throws Exception {
         OperatorGraph operatorGraph = new OperatorGraph();
         
         JSONObject schemaJsonJSONObject = new JSONObject();
@@ -45,7 +43,10 @@ public class OperatorGraphTest {
                     put(FileSinkBuilder.FILE_PATH, "./result.txt");
                 }});
         
+        operatorGraph.addLink("source", "regex");
+        operatorGraph.addLink("regex", "sink");
         
+        Plan queryPlan = operatorGraph.buildQueryPlan();
     }
 
 }

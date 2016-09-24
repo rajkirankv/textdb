@@ -10,6 +10,7 @@ import edu.uci.ics.textdb.common.constants.OperatorConstants;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
 import edu.uci.ics.textdb.plangen.operatorbuilder.DictionaryMatcherBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.DictionarySourceBuilder;
+import edu.uci.ics.textdb.plangen.operatorbuilder.FileSinkBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.FuzzyTokenMatcherBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordMatcherBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordSourceBuilder;
@@ -37,6 +38,7 @@ public class PlanGenUtils {
         operatorBuilderMap.put("FuzzyTokenMatcher".toLowerCase(), FuzzyTokenMatcherBuilder::buildOperator);
         operatorBuilderMap.put("KeywordSource".toLowerCase(), KeywordSourceBuilder::buildSourceOperator);
         operatorBuilderMap.put("DictionarySource".toLowerCase(), DictionarySourceBuilder::buildSourceOperator);
+        operatorBuilderMap.put("FileSink".toLowerCase(), FileSinkBuilder::buildSink);
     }
     
     public static IOperator buildOperator(String operatorType, Map<String, String> operatorProperties) throws Exception {
