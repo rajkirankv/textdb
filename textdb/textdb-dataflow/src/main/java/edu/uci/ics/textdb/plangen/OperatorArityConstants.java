@@ -15,6 +15,9 @@ public class OperatorArityConstants {
         fixedInputArityMap.put("RegexMatcher".toLowerCase(), 1);
         fixedInputArityMap.put("NlpExtractor".toLowerCase(), 1);
         fixedInputArityMap.put("FuzzyTokenMatcher".toLowerCase(), 1);
+        
+        fixedInputArityMap.put("FileSink".toLowerCase(), 1);
+        fixedInputArityMap.put("IndexSink".toLowerCase(), 1);
       
         fixedInputArityMap.put("Join".toLowerCase(), 2);
     }
@@ -22,15 +25,18 @@ public class OperatorArityConstants {
     public static Map<String, Integer> fixedOutputArityMap = new HashMap<>();
     static {
         fixedOutputArityMap.put("IndexSink".toLowerCase(), 0);
+        fixedOutputArityMap.put("FileSink".toLowerCase(), 0);
         
         fixedOutputArityMap.put("KeywordMatcher".toLowerCase(), 1);
         fixedOutputArityMap.put("DictionaryMatcher".toLowerCase(), 1);
         fixedOutputArityMap.put("RegexMatcher".toLowerCase(), 1);
         fixedOutputArityMap.put("NlpExtractor".toLowerCase(), 1);
         fixedOutputArityMap.put("FuzzyTokenMatcher".toLowerCase(), 1);
+        
         fixedOutputArityMap.put("KeywordSource".toLowerCase(), 1);
-        fixedOutputArityMap.put("DictionarySource".toLowerCase(), 1);        
-        fixedInputArityMap.put("Join".toLowerCase(), 1);
+        fixedOutputArityMap.put("DictionarySource".toLowerCase(), 1);
+        
+        fixedOutputArityMap.put("Join".toLowerCase(), 1);
     }
     
     

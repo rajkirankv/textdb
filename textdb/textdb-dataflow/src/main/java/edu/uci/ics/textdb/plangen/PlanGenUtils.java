@@ -12,6 +12,7 @@ import edu.uci.ics.textdb.plangen.operatorbuilder.DictionaryMatcherBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.DictionarySourceBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.FileSinkBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.FuzzyTokenMatcherBuilder;
+import edu.uci.ics.textdb.plangen.operatorbuilder.JoinBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordMatcherBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordSourceBuilder;
 import edu.uci.ics.textdb.plangen.operatorbuilder.NlpExtractorBuilder;
@@ -39,11 +40,13 @@ public class PlanGenUtils {
         operatorBuilderMap.put("KeywordSource".toLowerCase(), KeywordSourceBuilder::buildSourceOperator);
         operatorBuilderMap.put("DictionarySource".toLowerCase(), DictionarySourceBuilder::buildSourceOperator);
         operatorBuilderMap.put("FileSink".toLowerCase(), FileSinkBuilder::buildSink);
+        operatorBuilderMap.put("Join".toLowerCase(), JoinBuilder::buildOperator);
     }
     
     public static IOperator buildOperator(String operatorType, Map<String, String> operatorProperties) throws Exception {
         OperatorBuilder operatorBuilder = operatorBuilderMap.get(operatorType.toLowerCase());
-        planGenAssert(operatorBuilder != null, "operatorType is not valid. It must be one of " + OperatorConstants.operatorList);
+        planGenAssert(operatorBuilder != null, 
+                String.format("operatorType %s is invalid. It must be one of %s.", operatorType, operatorBuilderMap.keySet()));
                
         return operatorBuilder.buildOperator(operatorProperties);
     }
