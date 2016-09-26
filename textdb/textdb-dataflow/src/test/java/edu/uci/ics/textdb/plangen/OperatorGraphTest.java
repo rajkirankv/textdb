@@ -8,6 +8,7 @@ import org.junit.Test;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.api.dataflow.ISink;
 import edu.uci.ics.textdb.api.plan.Plan;
+import edu.uci.ics.textdb.common.exception.PlanGenException;
 import edu.uci.ics.textdb.dataflow.connector.OneToNBroadcastConnector;
 import edu.uci.ics.textdb.dataflow.connector.OneToNBroadcastConnector.ConnectorOutputOperator;
 import edu.uci.ics.textdb.dataflow.join.Join;
@@ -66,7 +67,7 @@ public class OperatorGraphTest {
     
 
     @Test
-    public void OperatorGraphTest1() throws Exception {
+    public void testOperatorGraph1() throws Exception {
         OperatorGraph operatorGraph = new OperatorGraph();
    
         operatorGraph.addOperator("source", "KeywordSource", keywordSourceProperties1);       
@@ -90,7 +91,7 @@ public class OperatorGraphTest {
     
     
     @Test
-    public void OperatorGraphTest2() throws Exception {
+    public void testOperatorGraph2() throws Exception {
         OperatorGraph operatorGraph = new OperatorGraph();
         
         JSONObject schemaJsonJSONObject = new JSONObject();
@@ -136,5 +137,77 @@ public class OperatorGraphTest {
         IOperator keywordSource = connector1.getInputOperator();
         Assert.assertTrue(keywordSource instanceof KeywordMatcherSourceOperator);
     }
+    
+  
+    /*
+     * Test a operator graph without a source operator
+     */
+    @Test (expected = PlanGenException.class)
+    public void testInvalidOperatorGraph1() throws Exception {
+        OperatorGraph operatorGraph = new OperatorGraph();
+        
+        operatorGraph.addOperator("regex", "RegexMatcher", regexMatcherProperties1);        
+        operatorGraph.addOperator("sink", "FileSink", fileSinkProperties1);      
+        operatorGraph.addLink("regex", "sink");
+                
+        Plan queryPlan = operatorGraph.buildQueryPlan();
+    }
+    
+    /*
+     * Test a operator graph without a sink operator
+     */
+    @Test (expected = PlanGenException.class)
+    public void testInvalidOperatorGraph2() throws Exception {
+        OperatorGraph operatorGraph = new OperatorGraph();
+        
+        operatorGraph.addOperator("source", "KeywordSource", keywordSourceProperties1);       
+        operatorGraph.addOperator("regex", "RegexMatcher", regexMatcherProperties1);        
+        operatorGraph.addLink("source", "regex");
+                
+        Plan queryPlan = operatorGraph.buildQueryPlan();
+    }
+    
+    /*
+     * Test a operator graph with more than one sink operators
+     */
+    @Test (expected = PlanGenException.class)
+    public void testInvalidOperatorGraph3() throws Exception {
+        OperatorGraph operatorGraph = new OperatorGraph();
+        
+        operatorGraph.addOperator("source", "KeywordSource", keywordSourceProperties1);       
+        operatorGraph.addOperator("regex", "RegexMatcher", regexMatcherProperties1);        
+        operatorGraph.addOperator("sink1", "FileSink", fileSinkProperties1);
+        operatorGraph.addOperator("sink2", "FileSink", fileSinkProperties1);      
+
+        operatorGraph.addLink("source", "regex");
+        operatorGraph.addLink("regex", "sink1");
+        operatorGraph.addLink("regex", "sink2");
+               
+        Plan queryPlan = operatorGraph.buildQueryPlan();
+    }
+    
+    /*
+     * Test a operator graph with a disconnected component
+     */
+    @Test (expected = PlanGenException.class)
+    public void testInvalidOperatorGraph4() throws Exception {
+        OperatorGraph operatorGraph = new OperatorGraph();
+        
+        operatorGraph.addOperator("source", "KeywordSource", keywordSourceProperties1);       
+        operatorGraph.addOperator("regex", "RegexMatcher", regexMatcherProperties1);        
+        operatorGraph.addOperator("sink1", "FileSink", fileSinkProperties1);
+        
+        operatorGraph.addOperator("regex2", "RegexMatcher", regexMatcherProperties1);
+        operatorGraph.addOperator("nlp", "NlpExtractor", nlpExtractorProperties1);       
+
+
+        operatorGraph.addLink("source", "regex");
+        operatorGraph.addLink("regex", "sink1");
+        operatorGraph.addLink("regex2", "nlp");
+               
+        Plan queryPlan = operatorGraph.buildQueryPlan();
+    }
+    
+    
 
 }
