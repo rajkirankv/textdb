@@ -84,10 +84,7 @@ public class DataConstants {
                 .withTokenizer(NGramTokenizerFactory.class, new String[] { "minGramSize", "3", "maxGramSize", "3" })
                 .addTokenFilter(LowerCaseFilterFactory.class).build();
     }
-    
-    /**
-     * @return a Lucene standard analyzer
-     */
+
     public static Analyzer getStandardAnalyzer() {
         return new StandardAnalyzer();
     }
