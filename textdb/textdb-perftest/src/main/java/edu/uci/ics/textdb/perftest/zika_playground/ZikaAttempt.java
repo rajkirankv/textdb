@@ -20,7 +20,8 @@ import edu.uci.ics.textdb.common.field.DataTuple;
 import edu.uci.ics.textdb.common.field.IntegerField;
 import edu.uci.ics.textdb.common.field.TextField;
 import edu.uci.ics.textdb.common.utils.Utils;
-import edu.uci.ics.textdb.dataflow.common.JoinPredicate;
+import edu.uci.ics.textdb.dataflow.common.IJoinPredicate;
+import edu.uci.ics.textdb.dataflow.common.JoinDistancePredicate;
 import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.connector.OneToNBroadcastConnector;
@@ -81,12 +82,14 @@ public class ZikaAttempt {
         ISourceOperator fileSource = new IterableSourceOperator(fileContents, (x -> parsePromedHTML(x)),
                 ZikaSchema.PromedMail_Schema);
 
-        IndexSink standardIndexSink = new IndexSink(fileSource, standardIndexPath, ZikaSchema.PromedMail_Schema,
+        IndexSink standardIndexSink = new IndexSink(standardIndexPath, ZikaSchema.PromedMail_Schema,
                 new StandardAnalyzer());
+        standardIndexSink.setInputOperator(fileSource);
         Plan standardIndexPlan = new Plan(standardIndexSink);
 
-        IndexSink trigramIndexSink = new IndexSink(fileSource, trigramIndexPath, ZikaSchema.PromedMail_Schema,
+        IndexSink trigramIndexSink = new IndexSink(trigramIndexPath, ZikaSchema.PromedMail_Schema,
                 DataConstants.getTrigramAnalyzer());
+        trigramIndexSink.setInputOperator(fileSource);
         Plan trigramIndexPlan = new Plan(trigramIndexSink);
 
         Engine engine = Engine.getEngine();
@@ -119,8 +122,8 @@ public class ZikaAttempt {
         ProjectionOperator projectionOperator2 = new ProjectionOperator(projectionPredicate2);
 
         FileSink fileSink = new FileSink(
-                new File("./data-files/results/PromedMail/person-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
-                (tuple -> Utils.getTupleString(tuple)));
+                new File("./data-files/results/PromedMail/person-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"));
+        fileSink.setToStringFunction((tuple -> Utils.getTupleString(tuple)));
 
         keywordMatcher.setInputOperator(indexSource);
         projectionOperator1.setInputOperator(keywordMatcher);
@@ -154,8 +157,8 @@ public class ZikaAttempt {
         ProjectionOperator projectionOperator2 = new ProjectionOperator(projectionPredicate2);
 
         FileSink fileSink = new FileSink( 
-                new File("./data-files/results/PromedMail/location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
-                (tuple -> Utils.getTupleString(tuple)));
+                new File("./data-files/results/PromedMail/location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"));
+        fileSink.setToStringFunction((tuple -> Utils.getTupleString(tuple)));
         
         keywordMatcher.setInputOperator(indexSource);
         projectionOperator1.setInputOperator(keywordMatcher);
@@ -216,10 +219,10 @@ public class ZikaAttempt {
                 DataConstants.getTrigramAnalyzer());
         RegexMatcher regexMatcherDate = new RegexMatcher(regexPredicateDate);
         
-        JoinPredicate joinPredicatePersonLocation = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
+        IJoinPredicate joinPredicatePersonLocation = new JoinDistancePredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
         Join joinPersonLocation = new Join(joinPredicatePersonLocation);
         
-        JoinPredicate joinPredicatePersonLocationDate = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
+        IJoinPredicate joinPredicatePersonLocationDate = new JoinDistancePredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
         Join joinPersonLocationDate = new Join(joinPredicatePersonLocationDate);
         
         ProjectionPredicate projectionPredicateIdAndSpan = new ProjectionPredicate(
@@ -227,8 +230,8 @@ public class ZikaAttempt {
         ProjectionOperator projectionOperatorIdAndSpan = new ProjectionOperator(projectionPredicateIdAndSpan);
 
         FileSink fileSink = new FileSink( 
-                new File("./data-files/results/PromedMail/date-person-location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
-                (tuple -> Utils.getTupleString(tuple)));
+                new File("./data-files/results/PromedMail/date-person-location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"));
+        fileSink.setToStringFunction((tuple -> Utils.getTupleString(tuple)));
         
         
         keywordMatcherZika.setInputOperator(indexSource);
@@ -306,10 +309,10 @@ public class ZikaAttempt {
                 DataConstants.getTrigramAnalyzer());
         RegexMatcher regexMatcherDate = new RegexMatcher(regexPredicateDate);
     
-        JoinPredicate joinPredicatePersonLocation = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
+        IJoinPredicate joinPredicatePersonLocation = new JoinDistancePredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
         Join joinPersonLocation = new Join(joinPredicatePersonLocation);
         
-        JoinPredicate joinPredicatePersonLocationDate = new JoinPredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
+        IJoinPredicate joinPredicatePersonLocationDate = new JoinDistancePredicate(ZikaSchema.ID_ATTR, ZikaSchema.CONTENT_ATTR, 100);
         Join joinPersonLocationDate = new Join(joinPredicatePersonLocationDate);
         
         ProjectionPredicate projectionPredicateIdAndSpan = new ProjectionPredicate(
@@ -317,8 +320,8 @@ public class ZikaAttempt {
         ProjectionOperator projectionOperatorIdAndSpan = new ProjectionOperator(projectionPredicateIdAndSpan);
 
         FileSink fileSink = new FileSink( 
-                new File("./data-files/results/PromedMail/date-person-location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"),
-                (tuple -> Utils.getTupleString(tuple)));
+                new File("./data-files/results/PromedMail/date-person-location-result-"+PerfTestUtils.formatTime(System.currentTimeMillis())+".txt"));
+        fileSink.setToStringFunction((tuple -> Utils.getTupleString(tuple)));
         
         
         keywordMatcherZika.setInputOperator(indexSource);
