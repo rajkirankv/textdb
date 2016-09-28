@@ -156,7 +156,7 @@ public class OperatorGraphTest {
         operatorGraph.addOperator("sink", "FileSink", fileSinkProperties1);
         operatorGraph.addLink("regex", "sink");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
 
     /*
@@ -170,7 +170,7 @@ public class OperatorGraphTest {
         operatorGraph.addOperator("regex", "RegexMatcher", regexMatcherProperties1);
         operatorGraph.addLink("source", "regex");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
 
     /*
@@ -189,7 +189,7 @@ public class OperatorGraphTest {
         operatorGraph.addLink("regex", "sink1");
         operatorGraph.addLink("regex", "sink2");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
 
     /*
@@ -210,7 +210,7 @@ public class OperatorGraphTest {
         operatorGraph.addLink("regex", "sink1");
         operatorGraph.addLink("regex2", "nlp");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
 
     /*
@@ -233,7 +233,7 @@ public class OperatorGraphTest {
         operatorGraph.addLink("nlp", "regex");
         operatorGraph.addLink("nlp", "sink1");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
     
     /*
@@ -256,7 +256,7 @@ public class OperatorGraphTest {
         operatorGraph.addLink("regex", "sink1");
         operatorGraph.addLink("regex2", "sink1");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
     
     /*
@@ -277,7 +277,7 @@ public class OperatorGraphTest {
         operatorGraph.addLink("source", "regex2");
         operatorGraph.addLink("regex", "sink1");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
     
     /*
@@ -293,7 +293,7 @@ public class OperatorGraphTest {
         operatorGraph.addLink("source", "sink1");
         operatorGraph.addLink("sink1", "source");
 
-        Plan queryPlan = operatorGraph.buildQueryPlan();
+        operatorGraph.buildQueryPlan();
     }
 
 }
