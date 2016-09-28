@@ -3,57 +3,52 @@ package edu.uci.ics.textdb.plangen;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.uci.ics.textdb.common.exception.PlanGenException;
+
 public class OperatorArityConstants {
     
-    public static Map<String, Integer> fixedInputArityMap = new HashMap<>();
-    static {
-        fixedInputArityMap.put("KeywordSource".toLowerCase(), 0);
-        fixedInputArityMap.put("DictionarySource".toLowerCase(), 0);
+    public static Map<String, Integer> fixedInputArityMap = new HashMap<String, Integer>(){{
+        put("KeywordSource".toLowerCase(), 0);
+        put("DictionarySource".toLowerCase(), 0);
         
-        fixedInputArityMap.put("KeywordMatcher".toLowerCase(), 1);
-        fixedInputArityMap.put("DictionaryMatcher".toLowerCase(), 1);
-        fixedInputArityMap.put("RegexMatcher".toLowerCase(), 1);
-        fixedInputArityMap.put("NlpExtractor".toLowerCase(), 1);
-        fixedInputArityMap.put("FuzzyTokenMatcher".toLowerCase(), 1);
+        put("KeywordMatcher".toLowerCase(), 1);
+        put("DictionaryMatcher".toLowerCase(), 1);
+        put("RegexMatcher".toLowerCase(), 1);
+        put("NlpExtractor".toLowerCase(), 1);
+        put("FuzzyTokenMatcher".toLowerCase(), 1);
         
-        fixedInputArityMap.put("FileSink".toLowerCase(), 1);
-        fixedInputArityMap.put("IndexSink".toLowerCase(), 1);
+        put("FileSink".toLowerCase(), 1);
+        put("IndexSink".toLowerCase(), 1);
       
-        fixedInputArityMap.put("Join".toLowerCase(), 2);
+        put("Join".toLowerCase(), 2);
+    }};
+    
+    public static Map<String, Integer> fixedOutputArityMap = new HashMap<String, Integer>(){{
+        put("IndexSink".toLowerCase(), 0);
+        put("FileSink".toLowerCase(), 0);
+        
+        put("KeywordMatcher".toLowerCase(), 1);
+        put("DictionaryMatcher".toLowerCase(), 1);
+        put("RegexMatcher".toLowerCase(), 1);
+        put("NlpExtractor".toLowerCase(), 1);
+        put("FuzzyTokenMatcher".toLowerCase(), 1);
+        
+        put("KeywordSource".toLowerCase(), 1);
+        put("DictionarySource".toLowerCase(), 1);
+        
+        put("Join".toLowerCase(), 1);  
+    }};
+    
+    public static int getFixedInputArity(String operatorType) throws PlanGenException {
+        PlanGenUtils.planGenAssert(fixedInputArityMap.containsKey(operatorType.toLowerCase()), 
+                String.format("input arity of %s is not specified.", operatorType));
+        return fixedInputArityMap.get(operatorType.toLowerCase());
     }
     
-    public static Map<String, Integer> fixedOutputArityMap = new HashMap<>();
-    static {
-        fixedOutputArityMap.put("IndexSink".toLowerCase(), 0);
-        fixedOutputArityMap.put("FileSink".toLowerCase(), 0);
-        
-        fixedOutputArityMap.put("KeywordMatcher".toLowerCase(), 1);
-        fixedOutputArityMap.put("DictionaryMatcher".toLowerCase(), 1);
-        fixedOutputArityMap.put("RegexMatcher".toLowerCase(), 1);
-        fixedOutputArityMap.put("NlpExtractor".toLowerCase(), 1);
-        fixedOutputArityMap.put("FuzzyTokenMatcher".toLowerCase(), 1);
-        
-        fixedOutputArityMap.put("KeywordSource".toLowerCase(), 1);
-        fixedOutputArityMap.put("DictionarySource".toLowerCase(), 1);
-        
-        fixedOutputArityMap.put("Join".toLowerCase(), 1);
-    }
-    
-    
-    public static boolean checkInputArity(String operatorType, int actualInputArity) {
-        if (fixedInputArityMap.containsKey(operatorType.toLowerCase())) {
-            return fixedInputArityMap.get(operatorType.toLowerCase()) == actualInputArity;
-        } else {
-            return false;
-        }
-    }
-    
-    public static boolean checkOutputArity(String operatorType, int actualOutputArity) {
-        if (fixedOutputArityMap.containsKey(operatorType.toLowerCase())) {
-            return fixedOutputArityMap.get(operatorType.toLowerCase()) == actualOutputArity;
-        } else {
-            return false;
-        }
+    public static int getFixedOutputArity(String operatorType) throws PlanGenException {
+        PlanGenUtils.planGenAssert(fixedOutputArityMap.containsKey(operatorType.toLowerCase()), 
+                String.format("input arity of %s is not specified.", operatorType));
+        return fixedOutputArityMap.get(operatorType.toLowerCase());
     }
     
 }

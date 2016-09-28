@@ -15,18 +15,23 @@ import edu.uci.ics.textdb.dataflow.connector.OneToNBroadcastConnector;
 import edu.uci.ics.textdb.dataflow.join.Join;
 
 /**
+ * A graph of operators representing the query plan.
  * 
  * @author Zuozhi Wang
- *
  */
 public class OperatorGraph {
     
+    // a map of an operator ID to the operator object
     HashMap<String, IOperator> operatorObjectMap;
     
+    // a map of an operator ID to the operator's type
     HashMap<String, String> operatorTypeMap;
+    // a map of an operator ID to the operator's properties
     HashMap<String, Map<String, String>> operatorPropertyMap;
+    // a map of an operator ID to operator's outputs (a set of operator IDs)
     HashMap<String, HashSet<String>> adjacencyList;
     
+    // a map of a Join Operator to its two input operators
     HashMap<Join, ArrayList<Object>> joinOperatorLinkMap;
 
     
@@ -38,6 +43,14 @@ public class OperatorGraph {
         joinOperatorLinkMap = new HashMap<>();
     }
     
+    /**
+     * Adds an operator to the operator graph.
+     * 
+     * @param operatorID
+     * @param operatorType
+     * @param operatorProperties
+     * @throws PlanGenException, if the operator ID already exists or the operator type is invalid.
+     */
     public void addOperator(String operatorID, String operatorType, Map<String, String> operatorProperties) throws PlanGenException {
         PlanGenUtils.planGenAssert(operatorID != null, "operatorID is null");
         PlanGenUtils.planGenAssert(operatorType != null, "operatorType is null");
@@ -56,34 +69,56 @@ public class OperatorGraph {
         adjacencyList.put(operatorID, new HashSet<>());   
     }
     
-    public void addLink(String from, String to) throws PlanGenException {
-        PlanGenUtils.planGenAssert(from != null, "\"from\" operator is null");
-        PlanGenUtils.planGenAssert(to != null, "\"to\" operator is null");
+    /**
+     * Adds a link from "src" operator to "dest" operator in the graph.
+     * 
+     * @param src, the operator ID of src operator
+     * @param dest, the operator ID of dest operator
+     * @throws PlanGenException, if the operator is null, is empty, or doesn't exist.
+     */
+    public void addLink(String src, String dest) throws PlanGenException {
+        PlanGenUtils.planGenAssert(src != null, "src operator is null");
+        PlanGenUtils.planGenAssert(dest != null, "dest operator is null");
         
-        PlanGenUtils.planGenAssert(! from.trim().isEmpty(), "\"from\" operator is empty");
-        PlanGenUtils.planGenAssert(! to.trim().isEmpty(), "\"to\" operator is empty");
+        PlanGenUtils.planGenAssert(! src.trim().isEmpty(), "src operator is empty");
+        PlanGenUtils.planGenAssert(! dest.trim().isEmpty(), "dest operator is empty");
         
-        PlanGenUtils.planGenAssert(hasOperator(from), String.format("operator %s doesn't exist", from));
-        PlanGenUtils.planGenAssert(hasOperator(to), String.format("operator %s doesn't exist", to));
+        PlanGenUtils.planGenAssert(hasOperator(src), String.format("operator %s doesn't exist", src));
+        PlanGenUtils.planGenAssert(hasOperator(dest), String.format("operator %s doesn't exist", dest));
         
-        adjacencyList.get(from).add(to);
+        adjacencyList.get(src).add(dest);
     }
-       
+    
+    /**
+     * Returns true if the operator graph contains the operatorID.
+     * 
+     * @param operatorID
+     * @return
+     */
     public boolean hasOperator(String operatorID) {
         return adjacencyList.containsKey(operatorID);
     }
     
-    
+    /**
+     * Builds and returns the query plan from the operator graph.
+     * 
+     * @return the plan generated from the operator graph
+     * @throws Exception, if the operator grpah is invalid.
+     */
     public Plan buildQueryPlan() throws Exception {
         buildOperators();        
         validateOperatorGraph();
-        buildLinks();
+        connectOperators();
         ISink sink = findSinkOperator();
         
         Plan queryPlan = new Plan(sink);
         return queryPlan;
     }
 
+    /*
+     * Builds the operators from the operators' properties to actual IOperator objects.
+     * 
+     */
     private void buildOperators() throws Exception {
         for (String operatorID : adjacencyList.keySet()) {
             String opeartorType = operatorTypeMap.get(operatorID);
@@ -95,18 +130,17 @@ public class OperatorGraph {
     }
     
     /*
-     * This function validates the operator graph.
-     * It throws a PlanGenException if the operator graph fails to meet any of the requirements.
+     * Validates the operator graph.
+     * The operator graph must meet all of the following requirements:
      * 
-     * The operator graph is a DAG (Directed Acyclic Graph).
-     * 
-     * The operator graph must satisfy the following requirements:
-     *   this DAG is weakly connected.
-     *   there's no cycles in this DAG.
+     *   the graph is a DAG (directed acyclic graph)
+     *     this DAG is weakly connected (no unreachable vertices).
+     *     there's no cycles in this DAG.
      *   each operator must meet its input and output arity constraints.
      *   the operator graph has at least one source operator.
      *   the operator graph has exactly one sink.
      * 
+     * Throws PlanGenException if the operator graph is invalid.
      */
     private void validateOperatorGraph() throws PlanGenException {
         checkGraphConnectivity();
@@ -116,92 +150,11 @@ public class OperatorGraph {
         checkSourceOperator();
         checkSinkOperator();
     }
-    
-    
-    private void buildLinks() throws PlanGenException {
-        HashSet<String> unvisitedVertices = new HashSet<>(adjacencyList.keySet());
-        HashSet<String> visitedVertices = new HashSet<>();
-        
-        for (String vertex : adjacencyList.keySet()) {
-            if (unvisitedVertices.contains(vertex)) {
-                buildLinkDfsVisit(vertex, unvisitedVertices, visitedVertices);
-            }
-        }
-    }
-    
-    private void buildLinkDfsVisit(String vertex, HashSet<String> unvisitedVertices, HashSet<String> visitedVertices) throws PlanGenException {
-        unvisitedVertices.remove(vertex);
-        IOperator currentOperator = operatorObjectMap.get(vertex);
-        int outputArity = adjacencyList.get(vertex).size();
-
-        if (outputArity > 1) {
-            OneToNBroadcastConnector oneToNConnector = new OneToNBroadcastConnector(outputArity);
-            oneToNConnector.setInputOperator(currentOperator);
-            int counter = 0;
-            for (String adjacentVertex : adjacencyList.get(vertex)) {
-                IOperator adjacentOperator = operatorObjectMap.get(adjacentVertex);
-                handleSetInputOperator(oneToNConnector.getOutputOperator(counter), adjacentOperator);
-                
-                if (unvisitedVertices.contains(adjacentVertex)) {
-                    buildLinkDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
-                }
-            }
-        } else {
-            for (String adjacentVertex : adjacencyList.get(vertex)) {
-                IOperator adjacentOperator = operatorObjectMap.get(adjacentVertex);
-                handleSetInputOperator(currentOperator, adjacentOperator);
-
-                if (unvisitedVertices.contains(adjacentVertex)) {
-                    buildLinkDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
-                }
-            }
-        }
-        
-        visitedVertices.add(vertex);      
-    }
-    
-    private void handleSetInputOperator(IOperator from, IOperator to) throws PlanGenException {
-        // Join needs to be handled specially.
-        if (to instanceof Join) {
-            Join join = (Join) to;
-            if (! joinOperatorLinkMap.containsKey(join)) {
-                joinOperatorLinkMap.put(join, new ArrayList<>());
-            }
-            ArrayList<Object> joinOperatorInputs = joinOperatorLinkMap.get(join);
-            if (joinOperatorInputs.size() == 0) {
-                join.setInnerInputOperator(from);
-            } else {
-                join.setOuterInputOperator(from);
-            }
-            joinOperatorInputs.add(from);
-        } else {
-            try {
-                to.getClass().getMethod("setInputOperator", IOperator.class).invoke(to, from);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
-                    | IllegalArgumentException | InvocationTargetException e) {
-                throw new PlanGenException(e.getMessage(), e);
-            }  
-        }
-    }
-     
-    
-    private ISink findSinkOperator() throws PlanGenException {
-        IOperator sinkOperator = adjacencyList.keySet().stream()
-                .filter(operator -> operatorTypeMap.get(operator).toLowerCase().contains("sink"))
-                .map(operator -> operatorObjectMap.get(operator))
-                .findFirst().orElse(null);
-        
-        PlanGenUtils.planGenAssert(sinkOperator != null, "Error: sink operator doesn't exist.");
-        PlanGenUtils.planGenAssert(sinkOperator instanceof ISink, "Error: sink operator's type doesn't match.");
-        
-        return (ISink) sinkOperator;
-    }
- 
-        
+  
     /*
-     * This function detects if there are any operators not connected to the operator graph.
+     * Detects if there are any operators not connected to the operator graph.
      * 
-     * It builds an undirected version of the operator graph, and then 
+     * This function builds an undirected version of the operator graph, and then 
      *   uses a Depth First Search (DFS) algorithm to traverse the graph from any vertex.
      * If the graph is weakly connected, then every vertex should be reached after the traversal.
      * 
@@ -246,11 +199,11 @@ public class OperatorGraph {
     }
     
     /*
-     * This function detects if there are any cycles in the operator graph.
+     * Detects if there are any cycles in the operator graph.
      * 
-     * It uses a Depth First Search (DFS) algorithm to traverse the graph.
-     * It maintains two lists of visited and visiting vertices.
-     * During the traversal, if it reaches an vertex that is in the visiting list, then there's a cycle.
+     * This function uses a Depth First Search (DFS) algorithm to traverse the graph.
+     * It detects cycle by maintaining two lists of visited and visiting vertices,
+     * during the traversal, if it reaches an vertex that is in the visiting list, then there's a cycle.
      * 
      * PlanGenException is thrown if a cycle is detected in the graph.
      * 
@@ -287,7 +240,7 @@ public class OperatorGraph {
     }
     
     /*
-     * This function checks if the input arities of all operators match the expected input arities.
+     * Checks if the input arities of all operators match the expected input arities.
      */
     private void checkOperatorInputArity() throws PlanGenException {
         HashMap<String, HashSet<String>> transposeAdjacencyList = new HashMap<>();
@@ -302,7 +255,7 @@ public class OperatorGraph {
         
         for (String vertex : transposeAdjacencyList.keySet()) {
             int actualInputArity = transposeAdjacencyList.get(vertex).size();
-            int expectedInputArity = OperatorArityConstants.fixedInputArityMap.get(operatorTypeMap.get(vertex).toLowerCase());
+            int expectedInputArity = OperatorArityConstants.getFixedInputArity(operatorTypeMap.get(vertex));
             PlanGenUtils.planGenAssert(
                     actualInputArity == expectedInputArity,
                     String.format("Operator %s should have %d inputs, got %d.", vertex, expectedInputArity, actualInputArity));
@@ -310,16 +263,18 @@ public class OperatorGraph {
     }
     
     /*
-     * This function checks if the output arity of "sink" operator match.
+     * Checks if the output arity of the operators match.
      * 
-     * For other operators, output arity is not checked,  
-     * because an one to N connector will be automatically added if necessary.
+     * All operators (except sink) should have at least 1 outputs.
+     * 
+     * The linking operator phrase will automatically added a One to N Connector to
+     * an operator with multiple outputs, so the outputs arities are not checked.
      * 
      */
     private void checkOperatorOutputArity() throws PlanGenException {
         for (String vertex : adjacencyList.keySet()) {
             int actualOutputArity = adjacencyList.get(vertex).size();
-            int expectedOutputArity = OperatorArityConstants.fixedOutputArityMap.get(operatorTypeMap.get(vertex).toLowerCase());
+            int expectedOutputArity = OperatorArityConstants.getFixedOutputArity(operatorTypeMap.get(vertex));
 
             if (vertex.toLowerCase().contains("sink")) {
                 PlanGenUtils.planGenAssert(
@@ -334,7 +289,7 @@ public class OperatorGraph {
     }
     
     /*
-     * This function makes sure that the operator graph has at least one source operator
+     * Checks that the operator graph has at least one source operator
      */
     private void checkSourceOperator() throws PlanGenException {
         boolean sourceExist = adjacencyList.keySet().stream()
@@ -345,7 +300,7 @@ public class OperatorGraph {
     }
     
     /*
-     * This function makes sure that the operator graph has exactly one sink operator.
+     * Checks that the operator graph has exactly one sink operator.
      */
     private void checkSinkOperator() throws PlanGenException {
         long sinkOperatorNumber = adjacencyList.keySet().stream()
@@ -355,6 +310,100 @@ public class OperatorGraph {
         
         PlanGenUtils.planGenAssert(sinkOperatorNumber == 1, 
                 String.format("There must be exaxtly one sink operator, got %d.", sinkOperatorNumber));
+    }
+    
+    /*
+     * Connects IOperator objects together according to the operator graph.
+     * 
+     * This functions traverses the graph. For each link it encounters, it invokes
+     * the corresponding "setInputOperator" function to connect operators.
+     */
+    private void connectOperators() throws PlanGenException {
+        HashSet<String> unvisitedVertices = new HashSet<>(adjacencyList.keySet());
+        HashSet<String> visitedVertices = new HashSet<>();
+        
+        for (String vertex : adjacencyList.keySet()) {
+            if (unvisitedVertices.contains(vertex)) {
+                connectOperatorDfsVisit(vertex, unvisitedVertices, visitedVertices);
+            }
+        }
+    }
+    
+    /*
+     * This is a helper function to traverse the graph using DFS algorithm for connecting operators.
+     */
+    private void connectOperatorDfsVisit(String vertex, HashSet<String> unvisitedVertices, HashSet<String> visitedVertices) throws PlanGenException {
+        unvisitedVertices.remove(vertex);
+        IOperator currentOperator = operatorObjectMap.get(vertex);
+        int outputArity = adjacencyList.get(vertex).size();
+        
+        // automatically adds a OneToNBroadcastConnector if the output arity > 1.s
+        if (outputArity > 1) {
+            OneToNBroadcastConnector oneToNConnector = new OneToNBroadcastConnector(outputArity);
+            oneToNConnector.setInputOperator(currentOperator);
+            int counter = 0;
+            for (String adjacentVertex : adjacencyList.get(vertex)) {
+                IOperator adjacentOperator = operatorObjectMap.get(adjacentVertex);
+                handleSetInputOperator(oneToNConnector.getOutputOperator(counter), adjacentOperator);
+                
+                if (unvisitedVertices.contains(adjacentVertex)) {
+                    connectOperatorDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
+                }
+            }
+        } else {
+            for (String adjacentVertex : adjacencyList.get(vertex)) {
+                IOperator adjacentOperator = operatorObjectMap.get(adjacentVertex);
+                handleSetInputOperator(currentOperator, adjacentOperator);
+
+                if (unvisitedVertices.contains(adjacentVertex)) {
+                    connectOperatorDfsVisit(adjacentVertex, unvisitedVertices, visitedVertices);
+                }
+            }
+        }
+        
+        visitedVertices.add(vertex);      
+    }
+    
+    private void handleSetInputOperator(IOperator from, IOperator to) throws PlanGenException {
+        // handles Join operator differently
+        if (to instanceof Join) {
+            Join join = (Join) to;
+            if (! joinOperatorLinkMap.containsKey(join)) {
+                joinOperatorLinkMap.put(join, new ArrayList<>());
+            }
+            ArrayList<Object> joinOperatorInputs = joinOperatorLinkMap.get(join);
+            if (joinOperatorInputs.size() == 0) {
+                join.setInnerInputOperator(from);
+            } else {
+                join.setOuterInputOperator(from);
+            }
+            joinOperatorInputs.add(from);
+        // invokes "setInputOperator" for all other operators
+        } else {
+            try {
+                to.getClass().getMethod("setInputOperator", IOperator.class).invoke(to, from);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
+                    | IllegalArgumentException | InvocationTargetException e) {
+                throw new PlanGenException(e.getMessage(), e);
+            }  
+        }
+    }
+     
+    /*
+     * Finds the sink operator in the operator graph.
+     * 
+     * This functions assumes that the graph is valid and there is only one sink in the graph.
+     */
+    private ISink findSinkOperator() throws PlanGenException {
+        IOperator sinkOperator = adjacencyList.keySet().stream()
+                .filter(operator -> operatorTypeMap.get(operator).toLowerCase().contains("sink"))
+                .map(operator -> operatorObjectMap.get(operator))
+                .findFirst().orElse(null);
+        
+        PlanGenUtils.planGenAssert(sinkOperator != null, "Error: sink operator doesn't exist.");
+        PlanGenUtils.planGenAssert(sinkOperator instanceof ISink, "Error: sink operator's type doesn't match.");
+        
+        return (ISink) sinkOperator;
     }
  
 }
