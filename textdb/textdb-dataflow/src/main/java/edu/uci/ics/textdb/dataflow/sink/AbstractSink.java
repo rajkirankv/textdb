@@ -1,6 +1,7 @@
 package edu.uci.ics.textdb.dataflow.sink;
 
 import edu.uci.ics.textdb.api.common.ITuple;
+import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.api.dataflow.ISink;
 
@@ -15,10 +16,6 @@ import edu.uci.ics.textdb.api.dataflow.ISink;
 public abstract class AbstractSink implements ISink {
 
     private IOperator inputOperator;
-
-    public AbstractSink(IOperator inputOperator) {
-        this.inputOperator = inputOperator;
-    }
 
     /**
      * @about Opens the child operator.
@@ -38,13 +35,11 @@ public abstract class AbstractSink implements ISink {
 
     @Override
     public void processTuples() throws Exception {
-
         ITuple nextTuple;
 
         while ((nextTuple = inputOperator.getNextTuple()) != null) {
             processOneTuple(nextTuple);
         }
-
     }
 
     /**
@@ -57,5 +52,9 @@ public abstract class AbstractSink implements ISink {
     @Override
     public void close() throws Exception {
         inputOperator.close();
+    }
+    
+    public Schema getOutputSchema() {
+        return this.inputOperator.getOutputSchema();
     }
 }

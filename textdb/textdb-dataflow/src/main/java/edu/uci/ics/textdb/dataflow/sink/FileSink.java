@@ -1,11 +1,9 @@
 package edu.uci.ics.textdb.dataflow.sink;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import edu.uci.ics.textdb.api.common.ITuple;
-import edu.uci.ics.textdb.api.dataflow.IOperator;
 
 /**
  * Created by chenli on 5/11/16.
@@ -13,32 +11,22 @@ import edu.uci.ics.textdb.api.dataflow.IOperator;
  * This class serializes each tuple from the subtree to a given file.
  */
 public class FileSink extends AbstractSink {
-
-    private PrintWriter printWriter;
-    private final File file;
-    private TupleToString toStringFunc;
     
     @FunctionalInterface
     public static interface TupleToString {
-    	String convertToString(ITuple tuple);
-    }
-    
-    public FileSink(File file, TupleToString toStringFunc) throws FileNotFoundException {
-        super(null);
-        this.file = file;
-        this.toStringFunc = toStringFunc;
-    }
-    
-    public FileSink(IOperator childOperator, File file) throws FileNotFoundException {
-        super(childOperator);
-        this.file = file;
-        this.toStringFunc = null;
+        String convertToString(ITuple tuple);
     }
 
-    public FileSink(IOperator childOperator, File file, TupleToString toStringFunc) throws FileNotFoundException {
-        super(childOperator);
+    private PrintWriter printWriter;
+    private final File file;   
+    private TupleToString toStringFunction = (tuple -> tuple.toString());
+    
+    public FileSink(File file) {
         this.file = file;
-        this.toStringFunc = toStringFunc;
+    }
+    
+    public void setToStringFunction(TupleToString toStringFunction) {
+        this.toStringFunction = toStringFunction;
     }
 
     @Override
@@ -57,10 +45,10 @@ public class FileSink extends AbstractSink {
 
     @Override
     protected void processOneTuple(ITuple nextTuple) {
-    	if (this.toStringFunc == null) {
-            printWriter.write(nextTuple.toString());
-    	} else {
-            printWriter.write(toStringFunc.convertToString(nextTuple));
-    	}
+        printWriter.write(toStringFunction.convertToString(nextTuple));
+    }
+    
+    public File getFile() {
+        return this.file;
     }
 }
