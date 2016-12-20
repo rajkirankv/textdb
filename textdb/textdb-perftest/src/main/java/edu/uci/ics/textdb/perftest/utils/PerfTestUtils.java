@@ -35,6 +35,8 @@ public class PerfTestUtils {
     public static String trigramIndexFolder = "./index/trigram/";
     public static String resultFolder = "./perftest-files/results/";
     public static String queryFolder = "./perftest-files/queries/";
+    public static String srcFileName = "";
+    public static String newLine = "\n";
 
     /**
      * 
@@ -164,6 +166,7 @@ public class PerfTestUtils {
             if (file.isDirectory()) {
                 continue;
             }
+            srcFileName = file.getName();
             writeIndex(file.getName(), new StandardAnalyzer(), "standard");
         }
     }
@@ -282,6 +285,54 @@ public class PerfTestUtils {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 
         return sdf.format(date).toString();
+    }
+    
+    /**
+     * Generate data from a data source 
+     * @throws IOException 
+     *
+     */
+    public static long genData(String filePath, long dataLen) throws IOException{
+    	long i = 0;
+    	ArrayList<String> line = new ArrayList<String>();
+    	try{
+	    	File srcFile = new File(filePath);
+	    	Scanner scannerSrc = new Scanner(srcFile);
+	    	
+	    	File files = new File(fileFolder);
+	    	for (File file : files.listFiles()) {
+	            if (file.getName().equals(".gitignore")) {
+	                continue;
+	            }
+	            if (file.isDirectory()) {
+	                continue;
+	            } else {
+	            	file.delete();
+	            }
+	        }
+	    	String sampleFileName = new String(dataLen + ".txt"); 
+	//    	String sampleFilePath = PerfTestUtils.getSampleFilePath(sampleFileName);
+	    	String sampleFilePath = new String(fileFolder + sampleFileName);
+	    	PerfTestUtils.createFile(sampleFilePath, "");
+	        FileWriter fileWriter = new FileWriter(sampleFilePath, true);
+	        
+	        while (scannerSrc.hasNextLine() && i<dataLen) {
+	//            line.add(scanner.nextLine());
+	            fileWriter.append(scannerSrc.nextLine()+"\n");
+	            i++;
+	        }
+	        scannerSrc.close();
+	        fileWriter.flush();
+	        fileWriter.close();
+    	}
+    	catch (FileNotFoundException e){
+    	    // do stuff here..
+    	    return 0;
+    	}
+    	catch (IOException e){
+    		return -1;
+    	}
+    	return i;
     }
 
 }
