@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,9 +21,9 @@ import edu.uci.ics.textdb.common.field.DataTuple;
 import edu.uci.ics.textdb.common.field.StringField;
 import edu.uci.ics.textdb.common.field.TextField;
 import edu.uci.ics.textdb.dataflow.sink.IndexSink;
-import edu.uci.ics.textdb.dataflow.source.FileSourceOperator;
+import edu.uci.ics.textdb.dataflow.source.TupleStreamSourceOperator;
 
-public class ChineseNews {
+public class ChineseNewsConstants {
     
     public static final String URL = "url";
     public static final String TITLE = "title";
@@ -60,23 +59,22 @@ public class ChineseNews {
     
     public static ITuple convertChineseNewsTuple(String docContent) {
         try {
-            JSONObject fileJson = org.json.XML.toJSONObject(docContent);            
+            JSONObject fileJson = org.json.XML.toJSONObject(docContent).getJSONObject("doc");
             ITuple tuple = new DataTuple(CHINESE_NEWS_SCHEMA,
                     new StringField(fileJson.getString("url")),
-                    new TextField(fileJson.getString("contentTitle")), 
+                    new TextField(fileJson.getString("contenttitle")), 
                     new TextField(fileJson.getString("content")));
-            
             return tuple;
         } catch (JSONException e) {
             return null;
         }
     }
     
-    public Plan getChineseNewsIndexPlan(String filePath, IDataStore dataStore, Analyzer luceneAnalyzer) {
+    public static Plan getWriteChineseNewsIndexPlan(String filePath, IDataStore dataStore, Analyzer luceneAnalyzer) throws FileNotFoundException {
         List<ITuple> chineseNewsTuples = getChineseNewsTuples(filePath);
-        
+                
         IndexSink chineseNewsSink = new IndexSink(dataStore.getDataDirectory(), dataStore.getSchema(), luceneAnalyzer, false);
-        ISourceOperator fileSourceOperator = new TupleStreamSourceOperator(chineseNewsTuples);
+        ISourceOperator fileSourceOperator = new TupleStreamSourceOperator(chineseNewsTuples,
                 dataStore.getSchema());
         chineseNewsSink.setInputOperator(fileSourceOperator);
 
@@ -85,9 +83,7 @@ public class ChineseNews {
         return writeIndexPlan;
     }
     
-    public static void main(String[] args) throws Exception {
-        getChineseNewsTuples("./sample-data-files/news_sohusite_xml.smarty.txt");
-    }
+
     
 
 }
