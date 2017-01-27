@@ -1,9 +1,15 @@
 package edu.uci.ics.textdb.textql.statements.predicates;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import edu.uci.ics.textdb.api.common.Attribute;
+import edu.uci.ics.textdb.api.common.Schema;
+import edu.uci.ics.textdb.api.exception.TextDBException;
+import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
 import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
 
@@ -57,6 +63,29 @@ public class SelectSomeFieldsPredicate implements SelectPredicate {
         projectionBean.setOperatorType("Projection");
         projectionBean.setAttributes(String.join(",", this.getProjectedFields()));
         return projectionBean;
+    }
+    
+    /**
+     * Generate the resulting output schema of this predicate based on
+     * the given input schema.
+     * The generated output schema is a copy of the input schema with only 
+     * the attributes that are present in the list of fields to be projected.
+     * @param inputSchema The input schema of this predicate.
+     * @return The generated output schema based on the input schema.
+     * @throws TextDBException If a required attribute for is not present.
+     */
+    public Schema generateOutputSchema(Schema inputSchema) throws TextDBException {
+        // Check for the existence of all required fields and throw an exception if it is not found
+        for (String projectedField : projectedFields) {
+            if (!inputSchema.containsField(projectedField)) {
+                throw new TextDBException("Required field '" + projectedField + "' was not found in input schema");
+            }
+        }
+        // Build the new Schema by removing attributes that are not in the list of fields to be projected
+        Attribute[] outputAttributes = inputSchema.getAttributes().stream()
+                .filter( attribute -> projectedFields.contains(attribute.getFieldName()) )
+                .toArray( Attribute[]::new );
+        return new Schema(outputAttributes);
     }
 
     

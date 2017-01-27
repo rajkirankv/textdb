@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import edu.uci.ics.textdb.api.common.Schema;
+import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.textql.planbuilder.beans.PassThroughBean;
 import edu.uci.ics.textdb.textql.statements.predicates.ExtractPredicate;
 import edu.uci.ics.textdb.textql.statements.predicates.SelectPredicate;
@@ -233,6 +235,34 @@ public class SelectExtractStatement extends Statement {
     @Override
     public List<String> getInputViews(){
         return Arrays.asList(this.fromClause);
+    }
+
+    /**
+     * Generate the resulting output schema of this predicate based on the given input schemas.
+     * The generated Schema is the input Schema after processed by the extract predicate
+     * and the select predicate.
+     * @param inputSchemas The input schemas of this statement.
+     * @return The generated output schema, the same as the input schemas.
+     * @throws TextDBException If the size of inputSchemas is different than the input arity, 
+     *     if a required attribute for projection is not present, if a required attribute for
+     *     extraction is not present or has type incompatible with the extraction type.
+     */
+    @Override
+    public Schema generateOutputSchema(List<Schema> inputSchemas) throws TextDBException {
+        // Assert the input arity is one 
+        if (inputSchemas.size() != 1) {
+            throw new TextDBException("The size of the list of input schemas must be 1");
+        }
+        Schema inputSchema = inputSchemas.get(0);
+        // Use the input schema as output schema and modify it based on extract and select predicates (if present)
+        Schema outputSchema = inputSchema;
+        if (extractPredicate != null) {
+            outputSchema = extractPredicate.generateOutputSchema(outputSchema);
+        }
+        if (selectPredicate != null) {
+            outputSchema = selectPredicate.generateOutputSchema(outputSchema);
+        }
+        return outputSchema;
     }
     
     
