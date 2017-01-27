@@ -81,9 +81,12 @@ public class SelectSomeFieldsPredicate implements SelectPredicate {
                 throw new TextDBException("Required field '" + projectedField + "' was not found in input schema");
             }
         }
+        List<String> projectedFieldsLowerCase = projectedFields.stream()
+                .map( field -> field.toLowerCase())
+                .collect(Collectors.toList());
         // Build the new Schema by removing attributes that are not in the list of fields to be projected
         Attribute[] outputAttributes = inputSchema.getAttributes().stream()
-                .filter( attribute -> projectedFields.contains(attribute.getFieldName()) )
+                .filter( attribute -> projectedFieldsLowerCase.contains( attribute.getFieldName().toLowerCase()) )
                 .toArray( Attribute[]::new );
         return new Schema(outputAttributes);
     }
