@@ -12,10 +12,13 @@ import org.junit.Test;
 
 import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.Schema;
+import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
-import edu.uci.ics.textdb.common.constants.SchemaConstants;
+import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcher;
+import edu.uci.ics.textdb.plangen.PlanGenUtils;
 import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordMatcherBuilder;
+import edu.uci.ics.textdb.common.constants.SchemaConstants;
 import edu.uci.ics.textdb.textql.statements.StatementTestUtils;
 import edu.uci.ics.textdb.web.request.beans.KeywordMatcherBean;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
@@ -497,6 +500,109 @@ public class KeywordExtractPredicateTest {
                 Assert.fail("Expected generateOutputSchema method to throw a TextDBException");
             }catch(TextDBException e){
                 
+            }
+        }
+    }
+
+    /**
+     * Integration test: assert the schemas obtained by invoking the
+     * generateOutputSchema method in the predicate and getOutpuSchema in 
+     * the generated operator are the same.
+     * A schema with attributes of all types is used as the input schema.
+     */
+    @Test
+    public void integrationOutputSchemaTest00() throws TextDBException {
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+        // Construct the predicate
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName(),
+                StatementTestUtils.TEXT_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        // Assert correct bean construction
+        OperatorBean operatorBean = keywordExtractPredicate.getOperatorBean("xxx");
+        Assert.assertTrue("Generated bean is not a KeywordMatcherBean", operatorBean instanceof KeywordMatcherBean);
+        // Assert correct operator construction
+        IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
+        Assert.assertTrue(operator instanceof KeywordMatcher);
+        KeywordMatcher keywordMatcherOperator = (KeywordMatcher)operator;
+        // Build an operator with the inputSchema and set it as the input of the KeywordMatcher operator
+        IOperator keywordMatcherInputOperator = StatementTestUtils.generateSampleIOperator(inputSchema, Collections.emptyList());
+        keywordMatcherOperator.setInputOperator(keywordMatcherInputOperator);
+        // Get schemas from statement and from the operator 
+        Schema statementOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        keywordMatcherOperator.open();
+        while (keywordMatcherOperator.getNextTuple() != null) {
+            // Some exceptions may be thrown only when the operator is iterated
+        }
+        Schema operatorOutputSchema = keywordMatcherOperator.getOutputSchema();
+        keywordMatcherOperator.close();
+        // Assert schemas from statement and from the operator are equal
+        Assert.assertEquals(statementOutputSchema, operatorOutputSchema);
+    }
+    
+    /**
+     * Integration test: assert an exception is thrown when calling the
+     * generateOutputSchema method of the predicate if and only if building
+     * the operator by using edu.uci.ics.textdb.plangen.operatorbuilder 
+     * and running it will also cause an exception to be thrown when
+     * the same parameters are used.
+     * This test check if an exception is thrown when a non existing field
+     * or field with incompatible type is used.
+     */
+    @Test
+    public void integrationExceptionDueToIncompatibleFieldTypeTest00(){
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+        List<String> matchingFieldsToTest = inputSchema.getAttributeNames();
+        matchingFieldsToTest.add("invalidField"); // Also test with non existing fields
+        // Iterate over all combinations of Attributes and  KeywordMatchingType
+        for(String fieldName : matchingFieldsToTest){
+            for(KeywordMatchingType matchingType : KeywordMatchingType.values()){
+                Schema predicateOutputSchema=null, operatorOutputSchema=null;
+                boolean statementOutputSuccess, operatorOutputSuccess;
+                // Build the predicate
+                List<String> matchingFields = Arrays.asList(fieldName);
+                String keywords = "keyword(s)";
+                KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType.toString());
+                // Get the output schema from the predicate
+                try {
+                    predicateOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+                    statementOutputSuccess = true;
+                } catch (TextDBException e) {
+                    statementOutputSuccess = false;
+                }
+                // Build the operator, run it and get the output schema
+                try {
+                    // Assert the bean creation
+                    OperatorBean operatorBean = keywordExtractPredicate.getOperatorBean("xxx");
+                    Assert.assertTrue(operatorBean instanceof KeywordMatcherBean);
+                    // Assert the operator creation
+                    IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
+                    Assert.assertTrue(operator instanceof KeywordMatcher);
+                    KeywordMatcher keywordMatcherOperator = (KeywordMatcher)operator;
+                    // Create an operator and set it as input of the KeywordMatcher operator
+                    IOperator keywordMatcherInputOperator = StatementTestUtils.generatePopulatedSampleOperator();
+                    Assert.assertEquals("Error in test code: defined input schema is different than the sample schema", 
+                            keywordMatcherInputOperator.getOutputSchema(), inputSchema);
+                    keywordMatcherOperator.setInputOperator(keywordMatcherInputOperator);
+                    // Iterate and get schema from the operator 
+                    keywordMatcherOperator.open();
+                    while (keywordMatcherOperator.getNextTuple() != null) {
+                        // Some exceptions may be thrown only when the operator is iterated
+                    }
+                    operatorOutputSchema = keywordMatcherOperator.getOutputSchema();
+                    keywordMatcherOperator.close();
+                    operatorOutputSuccess = true;
+                }catch(TextDBException e){
+                    operatorOutputSuccess = false;
+                }
+                // Assert the result from statement and generated operator are the equal
+                Assert.assertEquals("Expected predicate and operator to both fail or succed", statementOutputSuccess, operatorOutputSuccess);
+                if(statementOutputSuccess==true && operatorOutputSuccess==true){
+                    Assert.assertEquals("Output schema from predicate and operator does not match", predicateOutputSchema, operatorOutputSchema);
+                }
             }
         }
     }

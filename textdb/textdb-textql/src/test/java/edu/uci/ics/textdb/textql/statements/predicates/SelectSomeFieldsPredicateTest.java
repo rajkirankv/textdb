@@ -8,8 +8,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import edu.uci.ics.textdb.api.common.Schema;
+import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.SchemaConstants;
+import edu.uci.ics.textdb.dataflow.projection.ProjectionOperator;
+import edu.uci.ics.textdb.plangen.PlanGenUtils;
 import edu.uci.ics.textdb.textql.statements.StatementTestUtils;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
 import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
@@ -353,6 +356,106 @@ public class SelectSomeFieldsPredicateTest {
             );
         
         Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+    
+    /**
+     * Integration test: assert the schemas obtained by invoking the
+     * generateOutputSchema method in the predicate and getOutpuSchema in 
+     * the generated operator are the same.
+     * A schema with attributes of all types is used as the input schema
+     * and a list with some fields ("fieldDate", "fieldDouble", 
+     * "fieldString" and "fieldText") is used as the list of fields to 
+     * be projected.
+     */
+    @Test
+    public void integrationOutputSchemaTest00() throws TextDBException {
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+        SelectSomeFieldsPredicate selectSomeFieldsPredicate = new SelectSomeFieldsPredicate(Arrays.asList(
+                StatementTestUtils.DATE_ATTRIBUTE.getFieldName().toUpperCase(),
+                StatementTestUtils.DOUBLE_ATTRIBUTE.getFieldName().toUpperCase(),
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName().toUpperCase(),
+                StatementTestUtils.ID_ATTRIBUTE.getFieldName().toUpperCase()
+            ));
+        // Assert correct bean creation
+        OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
+        Assert.assertTrue(operatorBean instanceof ProjectionBean);
+        // Assert correct operator creation
+        IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
+        Assert.assertTrue(operator instanceof ProjectionOperator);
+        ProjectionOperator projectionOperator = (ProjectionOperator)operator;
+        IOperator projectionInputOperator = StatementTestUtils.generateSampleIOperator(inputSchema, Collections.emptyList());
+        projectionOperator.setInputOperator(projectionInputOperator);
+        // Get schemas from statement and operator and assert they are the same
+        Schema statementOutputSchema = selectSomeFieldsPredicate.generateOutputSchema(inputSchema);
+        projectionOperator.open();
+        while (projectionOperator.getNextTuple() != null) {
+            // Some exceptions may be thrown only when the operator is iterated
+        }
+        Schema operatorOutputSchema = projectionOperator.getOutputSchema();
+        projectionOperator.close();
+        // Assert schemas from statement and from the operator are equal
+        Assert.assertEquals(statementOutputSchema, operatorOutputSchema);
+    }
+    
+    /**
+     * Integration test: assert an exception is thrown when calling the
+     * generateOutputSchema method of the predicate if and only if building
+     * the operator by using edu.uci.ics.textdb.plangen.operatorbuilder.* 
+     * and running it will also cause an exception to be thrown when
+     * the same parameters are used.
+     * This test check if an exception is thrown when a non existing field
+     * or field with incompatible type is used.
+     */
+    @Test
+    public void integrationExceptionDueToIncompatibleFieldTypeTest00(){
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+        List<String> projectedFieldsToTest = inputSchema.getAttributeNames();
+        projectedFieldsToTest.add("invalidField"); // Also test with non existing fields
+        // Iterate over all Fields to be projected
+        for(String projectedField : projectedFieldsToTest){
+            Schema predicateOutputSchema=null, operatorOutputSchema=null;
+            boolean predicateOutputSuccess, operatorOutputSuccess;
+            // Build the predicate
+            List<String> projectedFields = Arrays.asList(projectedField);
+            SelectSomeFieldsPredicate selectSomeFieldsPredicate = new SelectSomeFieldsPredicate(projectedFields);
+            // Get the output schema from the statement
+            try{
+                predicateOutputSchema = selectSomeFieldsPredicate.generateOutputSchema(inputSchema);
+                predicateOutputSuccess = true;
+            }catch(TextDBException e){
+                predicateOutputSuccess = false;
+            }
+            // Get the output schema from the generated operator
+            try{
+                // Assert the bean creation
+                OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
+                Assert.assertTrue(operatorBean instanceof ProjectionBean);
+                // Assert the operator creation
+                IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
+                Assert.assertTrue(operator instanceof ProjectionOperator);
+                ProjectionOperator projectionOperator = (ProjectionOperator)operator;
+                // Create an operator and set it as input of the KeywordMatcher operator
+                IOperator keywordMatcherInputOperator = StatementTestUtils.generatePopulatedSampleOperator();
+                Assert.assertEquals("Error in test code: defined input schema is different than the sample schema", 
+                        keywordMatcherInputOperator.getOutputSchema(), inputSchema);
+                projectionOperator.setInputOperator(keywordMatcherInputOperator);
+                // Iterate and get schema from the operator 
+                projectionOperator.open();
+                while (projectionOperator.getNextTuple() != null) {
+                    // Some exceptions may be thrown only when the operator is iterated
+                }
+                operatorOutputSchema = projectionOperator.getOutputSchema();
+                projectionOperator.close();
+                operatorOutputSuccess = true;
+            }catch(TextDBException e){
+                operatorOutputSuccess = false;
+            }
+            // Assert the result from statement and generated operator are the equal
+            Assert.assertEquals("Expected predicate and operator to both fail or succed", predicateOutputSchema, operatorOutputSuccess);
+            if(predicateOutputSuccess==true && operatorOutputSuccess==true){
+                Assert.assertEquals("Output schema from predicate and operator does not match", predicateOutputSchema, operatorOutputSchema);   
+            }
+        }
     }
     
 }
