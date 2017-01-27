@@ -3,11 +3,17 @@ package edu.uci.ics.textdb.textql.statements.predicates;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.uci.ics.textdb.api.common.Attribute;
+import edu.uci.ics.textdb.api.common.Schema;
+import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
+import edu.uci.ics.textdb.common.constants.SchemaConstants;
+import edu.uci.ics.textdb.textql.statements.StatementTestUtils;
 import edu.uci.ics.textdb.web.request.beans.KeywordMatcherBean;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
 
@@ -157,6 +163,277 @@ public class KeywordExtractPredicateTest {
                             matchingFieldsAsString, null, null, keywords, matchingType);
         
         Assert.assertEquals(expectedProjectionBean, computedProjectionBean);
+    }
+
+    /**
+     * Test the generateOutputSchema method.
+     * This test use an empty Schema as input and no fields for extraction
+     * to be performed.
+     * The expected output Schema is a schema with the PAYLAOAD and
+     * SPAN_LIST attribute.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema00() throws TextDBException {
+        List<String> matchingFields = Arrays.asList();
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.CONJUNCTION_INDEXBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = new Schema();
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(
+                SchemaConstants.PAYLOAD_ATTRIBUTE,
+                SchemaConstants.SPAN_LIST_ATTRIBUTE
+            );
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType as input
+     * and no field to be matched.
+     * The expected output Schema is the input schema with the added 
+     * PAYLAOAD and SPAN_LIST attributes.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema01() throws TextDBException {
+        List<String> matchingFields = Arrays.asList();
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.PHRASE_INDEXBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with attributes in which FiledType is 
+     * either String or Text. All the fields in the input Schema are
+     * to be matched.
+     * The expected output Schema is the input schema with the added
+     * PAYLAOAD and SPAN_LIST attributes.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema02() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName(),
+                StatementTestUtils.TEXT_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = new Schema(
+                StatementTestUtils.STRING_ATTRIBUTE,
+                StatementTestUtils.TEXT_ATTRIBUTE
+            );
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(
+                StatementTestUtils.STRING_ATTRIBUTE,
+                StatementTestUtils.TEXT_ATTRIBUTE,
+                SchemaConstants.PAYLOAD_ATTRIBUTE,
+                SchemaConstants.SPAN_LIST_ATTRIBUTE
+            );
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType as input
+     * and attributes with type String and Text to be extracted.
+     * The expected output Schema is the input schema with the added 
+     * PAYLAOAD and SPAN_LIST attributes.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema03() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName(),
+                StatementTestUtils.TEXT_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType and the 
+     * PAYLAOAD attribute as input. One field with type String is
+     * in the list of fields to perform the extraction.
+     * The expected output Schema is the input schema with the added 
+     * SPAN_LIST attribute.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema04() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType and the 
+     * SPAN_LIST attribute as input. One field with type Text is
+     * in the list of fields to perform the extraction.
+     * The expected output Schema is the input schema with the added 
+     * PAYLAOAD attribute.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema05() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.TEXT_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.SPAN_LIST_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.SPAN_LIST_ATTRIBUTE, SchemaConstants.PAYLOAD_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType, the 
+     * SPAN_LIST and the PAYLOAD attributes as input. One field with
+     * type String is in the list of fields to be matched.
+     * The expected output Schema is a schema equal to the input schema.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema06() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.SPAN_LIST_ATTRIBUTE, SchemaConstants.PAYLOAD_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = inputSchema;
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType. One
+     * missing field is in the list of fields to perform the matching.
+     * The expected result is a TextDBException being thrown, since field
+     * 'fieldInvalid' does not exist in the input schema.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test(expected = TextDBException.class)
+    public void testGenerateOutputSchema07() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName(),
+                "fieldInvalid",
+                StatementTestUtils.TEXT_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+                
+        keywordExtractPredicate.generateOutputSchema(inputSchema);
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test use a Schema with all the values of FiledType. One
+     * field with incompatible is in the list of fields to perform
+     * the matching.
+     * The expected result is a TextDBException being thrown, since 
+     * fieldType Integer is not compatible with the matching type of
+     * this predicate.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test(expected = TextDBException.class)
+    public void testGenerateOutputSchema08() throws TextDBException {
+        List<String> matchingFields = Arrays.asList(
+                StatementTestUtils.STRING_ATTRIBUTE.getFieldName(),
+                StatementTestUtils.INTEGER_ATTRIBUTE.getFieldName(),
+                StatementTestUtils.TEXT_ATTRIBUTE.getFieldName()
+            );
+        String keywords = "keyword(s)";
+        String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
+        KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+                
+        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+        Schema expectedOutputSchema = new Schema(Stream.concat(
+                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE)
+            ).toArray(Attribute[]::new));
+        
+        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
     }
     
 }
