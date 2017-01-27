@@ -3,6 +3,8 @@ package edu.uci.ics.textdb.textql.statements.predicates;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -13,6 +15,7 @@ import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
 import edu.uci.ics.textdb.common.constants.SchemaConstants;
+import edu.uci.ics.textdb.plangen.operatorbuilder.KeywordMatcherBuilder;
 import edu.uci.ics.textdb.textql.statements.StatementTestUtils;
 import edu.uci.ics.textdb.web.request.beans.KeywordMatcherBean;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
@@ -427,13 +430,75 @@ public class KeywordExtractPredicateTest {
         KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
         Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
                 
-        Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
-        Schema expectedOutputSchema = new Schema(Stream.concat(
-                StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
-                Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE)
-            ).toArray(Attribute[]::new));
+        keywordExtractPredicate.generateOutputSchema(inputSchema);
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test check if valid values for matchingType with different
+     * cases can successfully generate an outputSchema.
+     * This test use a Schema with all the values of FiledType and a
+     * list with no fields to be matched.
+     * @throws TextDBException If an exception is thrown while generating
+     *  the new Schema.
+     */
+    @Test
+    public void testGenerateOutputSchema09() throws TextDBException {
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+        // Create a list with valid matchingType with the original case, lower case and upper case
+        List<String> allValidMatchingTypes = KeywordMatcherBuilder.keywordMatchingTypeMap.keySet().stream()
+                .flatMap( matchingType -> Stream.of(matchingType, matchingType.toLowerCase(), matchingType.toUpperCase()) )
+                .collect( Collectors.toList() );
         
-        Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+        for (String matchingType : allValidMatchingTypes) {
+            // Build the predicate
+            List<String> matchingFields = Collections.emptyList();
+            String keywords = "keyword(s)";
+            KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+            // Get the output schema from the predicate
+            Schema computedOutputSchema = keywordExtractPredicate.generateOutputSchema(inputSchema);
+            Schema expectedOutputSchema = new Schema(Stream.concat(
+                    StatementTestUtils.ALL_FIELD_TYPES_SCHEMA.getAttributes().stream(),
+                    Stream.of(SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE)
+                ).toArray(Attribute[]::new));
+            
+            Assert.assertEquals(expectedOutputSchema, computedOutputSchema);
+        }
+    }
+    
+    /**
+     * Test the generateOutputSchema method.
+     * This test check if a invalid matchingType (different cases)
+     * will cause an TextDBException to be thrown.
+     * This test use a Schema with all the values of FiledType. A
+     * list with no fields to be matched is used.
+     */
+    @Test
+    public void testGenerateOutputSchema10() {
+        Schema inputSchema = StatementTestUtils.ALL_FIELD_TYPES_SCHEMA;
+        // Create a list with invalid values for the matchingType attribute (perform some operations to change the string)
+        Set<String> allValidMatchingTypes = KeywordMatcherBuilder.keywordMatchingTypeMap.keySet();
+        List<String> invalidMatchingTypes = allValidMatchingTypes.stream()
+                .map( (validMatchingType) -> validMatchingType.substring(1, validMatchingType.length()/2))
+                .map( (invalidMatchingType) -> invalidMatchingType.substring(invalidMatchingType.length()/2)+invalidMatchingType )
+                .flatMap( matchingType -> Stream.of(matchingType, matchingType.toLowerCase(), matchingType.toUpperCase()) )
+                .filter( invalidMatchingType -> !allValidMatchingTypes.contains(invalidMatchingType))
+                .collect(Collectors.toList());
+        Assert.assertTrue(!invalidMatchingTypes.isEmpty());
+        
+        for (String matchingType : invalidMatchingTypes) {
+            // Build the predicate
+            List<String> matchingFields = Collections.emptyList();
+            String keywords = "keyword(s)";
+            KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
+            // Get the output schema from the predicate
+            try {
+                keywordExtractPredicate.generateOutputSchema(inputSchema);
+                Assert.fail("Expected generateOutputSchema method to throw a TextDBException");
+            }catch(TextDBException e){
+                
+            }
+        }
     }
     
 }
