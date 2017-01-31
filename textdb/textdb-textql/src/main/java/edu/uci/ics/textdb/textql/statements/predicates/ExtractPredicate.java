@@ -20,7 +20,7 @@ public interface ExtractPredicate {
      * @param extractionOperatorId The ID of the OperatorBean to be created.
      * @return The bean operator representation of this { @code ExtractPredicate }.
      */
-    public OperatorBean getOperatorBean(String extractionOperatorId);
+    public OperatorBean generateOperatorBean(String extractionOperatorId);
     
     /**
      * Generate the resulting output schema, based on the given input schema,
