@@ -451,7 +451,7 @@ public class SelectSomeFieldsPredicateTest {
                 operatorOutputSuccess = false;
             }
             // Assert the result from statement and generated operator are the equal
-            Assert.assertEquals("Expected predicate and operator to both fail or succed", predicateOutputSchema, operatorOutputSuccess);
+            Assert.assertEquals("Expected predicate and operator to both fail or succed", predicateOutputSuccess, operatorOutputSuccess);
             if(predicateOutputSuccess==true && operatorOutputSuccess==true){
                 Assert.assertEquals("Output schema from predicate and operator does not match", predicateOutputSchema, operatorOutputSchema);   
             }
