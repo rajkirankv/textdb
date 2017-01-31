@@ -239,13 +239,14 @@ public class SelectExtractStatement extends Statement {
 
     /**
      * Generate the resulting output schema of this predicate based on the given input schemas.
-     * The generated Schema is the input Schema after processed by the extract predicate
+     * The generated Schema is the input Schema after being processed by the extract predicate
      * and the select predicate.
      * @param inputSchemas The input schemas of this statement.
      * @return The generated output schema, the same as the input schemas.
      * @throws TextDBException If the size of inputSchemas is different than the input arity, 
      *     if a required attribute for projection is not present, if a required attribute for
-     *     extraction is not present or has type incompatible with the extraction type.
+     *     extraction is not present or if an attribute has type incompatible with the
+     *     extraction type.
      */
     @Override
     public Schema generateOutputSchema(List<Schema> inputSchemas) throws TextDBException {

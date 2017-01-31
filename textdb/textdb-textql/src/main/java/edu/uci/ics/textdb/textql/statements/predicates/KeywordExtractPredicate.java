@@ -149,7 +149,7 @@ public class KeywordExtractPredicate implements ExtractPredicate {
                 throw new TextDBException("Required field '" + matchingField + "' must be one of " + compatibleFieldTypes);
             }
         }
-        // Build a copy of the input schema (so the changes does not affect the input schema)
+        // Build a copy of the input schema (so the changes does not affect the inputSchema object)
         Schema outputSchema = new Schema(inputSchema.getAttributes().toArray(new Attribute[0]));
         // Append the PAYLOAD attribute to the schema if it is not present
         if (!outputSchema.containsField(SchemaConstants.PAYLOAD)) {

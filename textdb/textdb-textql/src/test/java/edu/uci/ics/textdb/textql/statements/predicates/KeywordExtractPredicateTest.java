@@ -602,7 +602,7 @@ public class KeywordExtractPredicateTest {
                     operatorOutputSuccess = false;
                 }
                 // Assert the result from statement and generated operator are the equal
-                Assert.assertEquals("Expected predicate and operator to both fail or succed", statementOutputSuccess, operatorOutputSuccess);
+                Assert.assertEquals("Expected predicate and operator to both fail or succeed", statementOutputSuccess, operatorOutputSuccess);
                 if(statementOutputSuccess==true && operatorOutputSuccess==true){
                     Assert.assertEquals("Output schema from predicate and operator does not match", predicateOutputSchema, operatorOutputSchema);
                 }

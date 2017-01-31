@@ -19,7 +19,7 @@ import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
 
 /**
  * This class contains test cases for the SelectSomeFieldsPredicate class.
- * The constructor, getters, setters and the generateOperatorBean methods are
+ * The constructor, getters, setters and the getOperatorBean methods are
  * tested.
  * 
  * @author Flavio Bayer
@@ -83,7 +83,7 @@ public class SelectSomeFieldsPredicateTest {
         List<String> projectedFields = Collections.emptyList();
         SelectSomeFieldsPredicate selectSomeFieldsPredicate = new SelectSomeFieldsPredicate(projectedFields);
         
-        OperatorBean computedProjectionBean = selectSomeFieldsPredicate.geetOperatorBean(operatorId);
+        OperatorBean computedProjectionBean = selectSomeFieldsPredicate.getOperatorBean(operatorId);
         OperatorBean expectedProjectionBean = new ProjectionBean(operatorId, "Projection", "", null, null);
         
         Assert.assertEquals(expectedProjectionBean, computedProjectionBean);
@@ -379,7 +379,7 @@ public class SelectSomeFieldsPredicateTest {
                 StatementTestUtils.ID_ATTRIBUTE.getFieldName().toUpperCase()
             ));
         // Assert correct bean creation
-        OperatorBean operatorBean = selectSomeFieldsPredicate.generateOperatorBean("xxx");
+        OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
         Assert.assertTrue(operatorBean instanceof ProjectionBean);
         // Assert correct operator creation
         IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
@@ -430,7 +430,7 @@ public class SelectSomeFieldsPredicateTest {
             // Get the output schema from the generated operator
             try{
                 // Assert the bean creation
-                OperatorBean operatorBean = selectSomeFieldsPredicate.generateOperatorBean("xxx");
+                OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
                 Assert.assertTrue(operatorBean instanceof ProjectionBean);
                 // Assert the operator creation
                 IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
@@ -453,7 +453,7 @@ public class SelectSomeFieldsPredicateTest {
                 operatorOutputSuccess = false;
             }
             // Assert the result from statement and generated operator are the equal
-            Assert.assertEquals("Expected predicate and operator to both fail or succed", predicateOutputSuccess, operatorOutputSuccess);
+            Assert.assertEquals("Expected predicate and operator to both fail or succeed", predicateOutputSuccess, operatorOutputSuccess);
             if(predicateOutputSuccess==true && operatorOutputSuccess==true){
                 Assert.assertEquals("Output schema from predicate and operator does not match", predicateOutputSchema, operatorOutputSchema);   
             }
