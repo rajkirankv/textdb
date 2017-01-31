@@ -19,7 +19,7 @@ import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
 
 /**
  * This class contains test cases for the SelectSomeFieldsPredicate class.
- * The constructor, getters, setters and the getOperatorBean methods are
+ * The constructor, getters, setters and the generateOperatorBean methods are
  * tested.
  * 
  * @author Flavio Bayer
@@ -28,7 +28,7 @@ import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
 public class SelectSomeFieldsPredicateTest {
     
     /**
-     * Test the class constructor, getters and the setter methods.
+     * Test the class constructor, getter and the setter methods.
      * Call the constructor of the SelectSomeFieldsPredicate, test 
      * if the returned value by the getter is the same as used in 
      * the constructor and then test if the value is changed
@@ -79,11 +79,12 @@ public class SelectSomeFieldsPredicateTest {
      */
     @Test
     public void testGetOperatorBean00() {
+        String operatorId = "xxx";
         List<String> projectedFields = Collections.emptyList();
         SelectSomeFieldsPredicate selectSomeFieldsPredicate = new SelectSomeFieldsPredicate(projectedFields);
         
-        OperatorBean computedProjectionBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
-        OperatorBean expectedProjectionBean = new ProjectionBean("xxx", "Projection", "", null, null);
+        OperatorBean computedProjectionBean = selectSomeFieldsPredicate.geetOperatorBean(operatorId);
+        OperatorBean expectedProjectionBean = new ProjectionBean(operatorId, "Projection", "", null, null);
         
         Assert.assertEquals(expectedProjectionBean, computedProjectionBean);
     }
@@ -96,11 +97,12 @@ public class SelectSomeFieldsPredicateTest {
      */
     @Test
     public void testGetOperatorBean01() {
+        String operatorId = "zwx";
         List<String> projectedFields = Arrays.asList("field0", "field1");
         SelectSomeFieldsPredicate selectSomeFieldsPredicate = new SelectSomeFieldsPredicate(projectedFields);
         
-        OperatorBean computedProjectionBean = selectSomeFieldsPredicate.getOperatorBean("zwx");
-        OperatorBean expectedProjectionBean = new ProjectionBean("zwx", "Projection", "field0,field1", null, null);
+        OperatorBean computedProjectionBean = selectSomeFieldsPredicate.getOperatorBean(operatorId);
+        OperatorBean expectedProjectionBean = new ProjectionBean(operatorId, "Projection", "field0,field1", null, null);
 
         Assert.assertEquals(expectedProjectionBean, computedProjectionBean);        
     }
@@ -377,7 +379,7 @@ public class SelectSomeFieldsPredicateTest {
                 StatementTestUtils.ID_ATTRIBUTE.getFieldName().toUpperCase()
             ));
         // Assert correct bean creation
-        OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
+        OperatorBean operatorBean = selectSomeFieldsPredicate.generateOperatorBean("xxx");
         Assert.assertTrue(operatorBean instanceof ProjectionBean);
         // Assert correct operator creation
         IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
@@ -428,7 +430,7 @@ public class SelectSomeFieldsPredicateTest {
             // Get the output schema from the generated operator
             try{
                 // Assert the bean creation
-                OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
+                OperatorBean operatorBean = selectSomeFieldsPredicate.generateOperatorBean("xxx");
                 Assert.assertTrue(operatorBean instanceof ProjectionBean);
                 // Assert the operator creation
                 IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
