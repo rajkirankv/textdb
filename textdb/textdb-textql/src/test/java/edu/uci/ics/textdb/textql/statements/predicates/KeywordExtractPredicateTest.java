@@ -525,7 +525,7 @@ public class KeywordExtractPredicateTest {
         String matchingType = KeywordMatchingType.SUBSTRING_SCANBASED.toString();
         KeywordExtractPredicate keywordExtractPredicate = new KeywordExtractPredicate(matchingFields, keywords, matchingType);
         // Assert correct bean construction
-        OperatorBean operatorBean = keywordExtractPredicate.getOperatorBean("xxx");
+        OperatorBean operatorBean = keywordExtractPredicate.generateOperatorBean("xxx");
         Assert.assertTrue("Generated bean is not a KeywordMatcherBean", operatorBean instanceof KeywordMatcherBean);
         // Assert correct operator construction
         IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
@@ -579,7 +579,8 @@ public class KeywordExtractPredicateTest {
                 // Build the operator, run it and get the output schema
                 try {
                     // Assert the bean creation
-                    OperatorBean operatorBean = keywordExtractPredicate.getOperatorBean("xxx");
+                    String operatorBeanId = "xxx";
+                    OperatorBean operatorBean = keywordExtractPredicate.generateOperatorBean(operatorBeanId);
                     Assert.assertTrue(operatorBean instanceof KeywordMatcherBean);
                     // Assert the operator creation
                     IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());

@@ -380,7 +380,7 @@ public class SelectSomeFieldsPredicateTest {
                 StatementTestUtils.ID_ATTRIBUTE.getFieldName().toUpperCase()
             ));
         // Assert correct bean creation
-        OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
+        OperatorBean operatorBean = selectSomeFieldsPredicate.generateOperatorBean("xxx");
         Assert.assertTrue(operatorBean instanceof ProjectionBean);
         // Assert correct operator creation
         IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
@@ -431,7 +431,8 @@ public class SelectSomeFieldsPredicateTest {
             // Get the output schema from the generated operator
             try{
                 // Assert the bean creation
-                OperatorBean operatorBean = selectSomeFieldsPredicate.getOperatorBean("xxx");
+                String operatorBeanId = "xxx";
+                OperatorBean operatorBean = selectSomeFieldsPredicate.generateOperatorBean(operatorBeanId);
                 Assert.assertTrue(operatorBean instanceof ProjectionBean);
                 // Assert the operator creation
                 IOperator operator = PlanGenUtils.buildOperator(operatorBean.getOperatorType(), operatorBean.getOperatorProperties());
