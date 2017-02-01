@@ -241,6 +241,20 @@ public class SelectExtractStatement extends Statement {
      * Generate the resulting output schema of this predicate based on the given input schemas.
      * The generated Schema is the input Schema after being processed by the extract predicate
      * and the select predicate.
+     * The SelectEctractStatement has input arity equals to 1, thus the length of the array
+     * of input schemas must be 1.
+     * 
+     * Example: for an array containing only the following schema as input:
+     *  [ { "name", FieldType.STRING }, { "age", FieldType.INTEGER }, 
+     *      { "height", FieldType.HEIGHT }, { "dateOfBirth", FieldType.DATE } ]
+     * And a keyword match operation being performed in some fields plus the following list
+     * of fields to projected:
+     *  [ "dateOfBirth", "name", SchemaConstants.SPAN_LIST ]
+     * The generated schema is a schema containing only the fields in the projection list,
+     * including the SPAN_LIST_ATTRIBUTE created by the keyword match operation:
+     *  [ { "name", FieldType.STRING }, { "dateOfBirth", FieldType.DATE },
+     *      SchemaConstants.SPAN_LIST_ATTRIBUTE  ]
+     *      
      * @param inputSchemas The input schemas of this statement.
      * @return The generated output schema, the same as the input schemas.
      * @throws TextDBException If the size of inputSchemas is different than the input arity, 
@@ -249,12 +263,12 @@ public class SelectExtractStatement extends Statement {
      *     extraction type.
      */
     @Override
-    public Schema generateOutputSchema(List<Schema> inputSchemas) throws TextDBException {
+    public Schema generateOutputSchema(Schema... inputSchemas) throws TextDBException {
         // Assert the input arity is one 
-        if (inputSchemas.size() != 1) {
+        if (inputSchemas.length != 1) {
             throw new TextDBException("The size of the list of input schemas must be 1");
         }
-        Schema inputSchema = inputSchemas.get(0);
+        Schema inputSchema = inputSchemas[0];
         // Use the input schema as output schema and modify it based on extract and select predicates (if present)
         Schema outputSchema = inputSchema;
         if (extractPredicate != null) {

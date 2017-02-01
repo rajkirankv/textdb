@@ -109,19 +109,29 @@ public class CreateViewStatement extends Statement {
      * Build the resulting output schema of this predicate based on the given input schemas.
      * This statement does not apply any modification to the input schema, thus the output
      * schema is equal to the input schema.
+     * The CreateViewStatement has input arity equals to 1, thus the length of the array
+     * of input schemas must be 1.
+     * 
+     * Example: for an array containing only the following schema as input:
+     *  [ { "name", FieldType.STRING }, { "age", FieldType.INTEGER }, 
+     *      { "height", FieldType.HEIGHT }, { "dateOfBirth", FieldType.DATE } ]
+     * The generated schema is a schema just like the input schema:
+     *  [ { "name", FieldType.STRING }, { "age", FieldType.INTEGER }, 
+     *      { "height", FieldType.HEIGHT }, { "dateOfBirth", FieldType.DATE } ]
+     * 
      * @param inputSchemas The input schemas of this statement.
      * @return The generated output schema, a copy of the the input schema.
      * @throws TextDBException If the size of inputSchemas is different than the input arity.
      */
     @Override
-    public Schema generateOutputSchema(List<Schema> inputSchemas) throws TextDBException {
+    public Schema generateOutputSchema(Schema... inputSchemas) throws TextDBException {
         // Assert the input arity is one 
-        if (inputSchemas.size() != 1) {
+        if (inputSchemas.length != 1) {
             throw new TextDBException("The size of the list of input schemas must be 1");
         }
-        Schema inputSchema = inputSchemas.get(0);
+        Schema inputSchema = inputSchemas[0];
         // Return a copy of the input schema
-        return new Schema(inputSchema.getAttributes().toArray(new Attribute[0]));
+        return new Schema(inputSchema.getAttributes().stream().toArray(Attribute[]::new));
     }
     
     

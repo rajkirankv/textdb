@@ -203,7 +203,7 @@ public class KeywordExtractPredicateTest {
 
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType as input
+     * This test uses a Schema with all the values of FiledType as input
      * and no field to be matched.
      * The expected output Schema is the input schema with the added 
      * PAYLAOAD and SPAN_LIST attributes.
@@ -230,7 +230,7 @@ public class KeywordExtractPredicateTest {
 
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes in which FiledType is 
+     * This test uses a Schema with attributes in which FiledType is 
      * either String or Text. All the fields in the input Schema are
      * to be matched.
      * The expected output Schema is the input schema with the added
@@ -266,7 +266,7 @@ public class KeywordExtractPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType as input
+     * This test uses a Schema with all the values of FiledType as input
      * and attributes with type String and Text to be extracted.
      * The expected output Schema is the input schema with the added 
      * PAYLAOAD and SPAN_LIST attributes.
@@ -295,7 +295,7 @@ public class KeywordExtractPredicateTest {
 
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType and the 
+     * This test uses a Schema with all the values of FiledType and the 
      * PAYLAOAD attribute as input. One field with type String is
      * in the list of fields to perform the extraction.
      * The expected output Schema is the input schema with the added 
@@ -328,7 +328,7 @@ public class KeywordExtractPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType and the 
+     * This test uses a Schema with all the values of FiledType and the 
      * SPAN_LIST attribute as input. One field with type Text is
      * in the list of fields to perform the extraction.
      * The expected output Schema is the input schema with the added 
@@ -361,7 +361,7 @@ public class KeywordExtractPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType, the 
+     * This test uses a Schema with all the values of FiledType, the 
      * SPAN_LIST and the PAYLOAD attributes as input. One field with
      * type String is in the list of fields to be matched.
      * The expected output Schema is a schema equal to the input schema.
@@ -390,7 +390,7 @@ public class KeywordExtractPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType. One
+     * This test uses a Schema with all the values of FiledType. One
      * missing field is in the list of fields to perform the matching.
      * The expected result is a TextDBException being thrown, since field
      * 'fieldInvalid' does not exist in the input schema.
@@ -415,7 +415,7 @@ public class KeywordExtractPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the values of FiledType. One
+     * This test uses a Schema with all the values of FiledType. One
      * field with incompatible is in the list of fields to perform
      * the matching.
      * The expected result is a TextDBException being thrown, since 
@@ -443,7 +443,7 @@ public class KeywordExtractPredicateTest {
      * Test the generateOutputSchema method.
      * This test check if valid values for matchingType with different
      * cases can successfully generate an outputSchema.
-     * This test use a Schema with all the values of FiledType and a
+     * This test uses a Schema with all the values of FiledType and a
      * list with no fields to be matched.
      * @throws TextDBException If an exception is thrown while generating
      *  the new Schema.
@@ -476,7 +476,7 @@ public class KeywordExtractPredicateTest {
      * Test the generateOutputSchema method.
      * This test check if a invalid matchingType (different cases)
      * will cause an TextDBException to be thrown.
-     * This test use a Schema with all the values of FiledType. A
+     * This test uses a Schema with all the values of FiledType. A
      * list with no fields to be matched is used.
      */
     @Test

@@ -98,7 +98,7 @@ public abstract class Statement {
      * @return The generated output schema based on the input schemas.
      * @throws TextDBException If the output schema cannot be generated.
      */
-    public abstract Schema generateOutputSchema(List<Schema> inputSchemas) throws TextDBException;
+    public abstract Schema generateOutputSchema(Schema... inputSchemas) throws TextDBException;
     
     
     @Override

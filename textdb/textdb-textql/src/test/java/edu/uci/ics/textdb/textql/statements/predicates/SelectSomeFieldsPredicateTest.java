@@ -147,7 +147,7 @@ public class SelectSomeFieldsPredicateTest {
 
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all values of FieldType
+     * This test uses a Schema with attributes with all values of FieldType
      * and some fields to be projected in the same order which they are in
      * the input schema ("fieldId", "fieldDouble", "fieldString", "fieldList").
      * The expected result is an output schema with the attributes present
@@ -179,7 +179,7 @@ public class SelectSomeFieldsPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all values of FieldType
+     * This test uses a Schema with attributes with all values of FieldType
      * and some fields to be projected in a different order in which they 
      * are in the input schema("fieldList", "fieldDouble", "fieldString",
      * "fieldId").
@@ -212,7 +212,7 @@ public class SelectSomeFieldsPredicateTest {
 
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all values of FieldType
+     * This test uses a Schema with attributes with all values of FieldType
      * and no fields to be projected.
      * The expected output Schema is an empty schema.
      * @throws TextDBException If an exception is thrown while generating
@@ -232,7 +232,7 @@ public class SelectSomeFieldsPredicateTest {
 
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all values of FieldType
+     * This test uses a Schema with attributes with all values of FieldType
      * and all attributes in the list of fields to be projected.
      * The expected result is an output schema just like the input schema.
      * @throws TextDBException If an exception is thrown while generating
@@ -270,7 +270,7 @@ public class SelectSomeFieldsPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all values of FieldType
+     * This test uses a Schema with attributes with all values of FieldType
      * and a list with valid field names and an invalid field name.
      * The expected result is a TextDBException being thrown, since field
      * 'fieldInvalid' does not exist in the input schema.
@@ -295,7 +295,7 @@ public class SelectSomeFieldsPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all values of FieldType
+     * This test uses a Schema with attributes with all values of FieldType
      * and a list with valid field names, ignoring duplicate names.
      * The expected output Schema is an output schema with multiples
      * attributes including the duplicates attributes.
@@ -329,7 +329,7 @@ public class SelectSomeFieldsPredicateTest {
     /**
      * Test the generateOutputSchema method to check whether the name of
      * the projected fields are case-sensitive. 
-     * This test use a Schema with all the attributes in SchemaConstants
+     * This test uses a Schema with all the attributes in SchemaConstants
      * and project some fields with valid name but with different
      * capitalization.
      * The expected output Schema is an output schema with the projected

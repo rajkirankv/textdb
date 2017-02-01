@@ -126,6 +126,17 @@ public class KeywordExtractPredicate implements ExtractPredicate {
      * after the extraction operation is performed.
      * The generated output schema is a copy of the input schema with the
      * addition of the PAYLOAD and SPAN_LIST attributes, if not present.
+     * The matching type, the matching fields and the keyword do not affect
+     * the output schema.
+     * 
+     * Example: for the following schema used as input:
+     *  [ { "name", FieldType.STRING }, { "age", FieldType.INTEGER }, 
+     *      { "height", FieldType.HEIGHT }, { "dateOfBirth", FieldType.DATE } ]
+     * The generated schema is the input schema with PAYLOAD and SPAN_LIST attributes:
+     *  [ { "name", FieldType.STRING }, { "age", FieldType.INTEGER }, 
+     *      { "height", FieldType.HEIGHT }, { "dateOfBirth", FieldType.DATE },
+     *      SchemaConstants.PAYLOAD_ATTRIBUTE, SchemaConstants.SPAN_LIST_ATTRIBUTE ]
+     * 
      * @param inputSchema The input schema of this predicate.
      * @return The generated output schema based on the input schema.
      * @throws TextDBException If a required attribute for extraction is not present
@@ -149,8 +160,8 @@ public class KeywordExtractPredicate implements ExtractPredicate {
                 throw new TextDBException("Required field '" + matchingField + "' must be one of " + compatibleFieldTypes);
             }
         }
-        // Build a copy of the input schema (so the changes does not affect the inputSchema object)
-        Schema outputSchema = new Schema(inputSchema.getAttributes().toArray(new Attribute[0]));
+        // Build a copy of the input schema (so the changes do not affect the inputSchema object)
+        Schema outputSchema = new Schema(inputSchema.getAttributes().stream().toArray(Attribute[]::new));
         // Append the PAYLOAD attribute to the schema if it is not present
         if (!outputSchema.containsField(SchemaConstants.PAYLOAD)) {
             outputSchema = Utils.addAttributeToSchema(outputSchema, SchemaConstants.PAYLOAD_ATTRIBUTE);

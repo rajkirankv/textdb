@@ -70,6 +70,16 @@ public class SelectSomeFieldsPredicate implements SelectPredicate {
      * the given input schema.
      * The generated output schema is a copy of the input schema with only 
      * the attributes that are present in the list of fields to be projected.
+     * 
+     * Example: for the following schema used as input:
+     *  [ { "name", FieldType.STRING }, { "age", FieldType.INTEGER }, 
+     *      { "height", FieldType.HEIGHT }, { "dateOfBirth", FieldType.DATE } ]
+     * And the following list of fields to be projected:
+     *  [ "dateOfBirth", "name" ]
+     * The generated schema is a schema containing only the fields in the 
+     * projection list:
+     *  [ { "name", FieldType.STRING }, { "dateOfBirth", FieldType.DATE } ]
+     * 
      * @param inputSchema The input schema of this predicate.
      * @return The generated output schema based on the input schema.
      * @throws TextDBException If a required attribute for is not present.

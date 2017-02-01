@@ -58,7 +58,7 @@ public class SelectAllFieldsPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with attributes with all FieldTypes.
+     * This test uses a Schema with attributes with all FieldTypes.
      * The expected output Schema is the same as the input Schema.
      */
     @Test
@@ -75,7 +75,7 @@ public class SelectAllFieldsPredicateTest {
     
     /**
      * Test the generateOutputSchema method.
-     * This test use a Schema with all the attributes in SchemaConstants.
+     * This test uses a Schema with all the attributes in SchemaConstants.
      * The expected output Schema is the same as the input Schema.
      */
     @Test
