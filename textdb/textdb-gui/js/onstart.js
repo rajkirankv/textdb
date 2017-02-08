@@ -28,11 +28,14 @@ var setup = function(){
 	var DEFAULT_DATA_SOURCE = "collection name";
 	var DEFAULT_FILE_SINK = "output.txt";
 	var DEFAULT_ATTRIBUTE_ID = "_id";
-	var DEFAULT_PREDICATE_TYPE = "CharacterDistance";
-	var DEFAULT_DISTANCE = 100; //threshold
+	var DEFAULT_PREDICATE_TYPE = "Characterthreshold";
+	var DEFAULT_THRESHOLD = 100; //threshold
 	var DEFAULT_ATTRIBUTES = "first name, last name";
 	var DEFAULT_LIMIT = null;
 	var DEFAULT_OFFSET = null;
+
+	var DEFAULT_IN_ATTRIBUTE = "name1";
+	var DEFAULT_OUT_ATTRIBUTE = "name2"
 
 	/*
 		Helper Functions
@@ -103,10 +106,10 @@ var setup = function(){
 			extraOperators['file_path'] = userInput;
 		}
 		else if (panel == 'join-panel'){
-			if (userInput == null || userInput == ''){
-				userInput = DEFAULT_ATTRIBUTE_ID;
-			}
-			extraOperators['id_attribute'] = userInput;
+			// if (userInput == null || userInput == ''){
+			// 	userInput = DEFAULT_ATTRIBUTE_ID;
+			// }
+			// extraOperators['id_attribute'] = userInput;
 
 			var predicateType = $('#' + panel + ' .predicate-type').val();
 			if (predicateType == null || predicateType == ''){
@@ -114,11 +117,14 @@ var setup = function(){
 			}
 			extraOperators['predicate_type'] = predicateType;
 
-			var distance = $('#' + panel + ' .distance').val();
-			if (distance == null || distance == ''){
-				distance = DEFAULT_DISTANCE;
+			var threshold = $('#' + panel + ' .threshold').val();
+			if (threshold == null || threshold == ''){
+				threshold = DEFAULT_THRESHOLD;
 			}
-			extraOperators['distance'] = distance;
+			extraOperators['threshold'] = threshold;
+
+
+
 		}
 		return extraOperators;
 	};
@@ -141,6 +147,18 @@ var setup = function(){
 				result = DEFAULT_ATTRIBUTES;
 			}
 		}
+		// HENRY change begin
+		else if (keyword == ' .outer-attribute'){
+			if (result == null || result == ''){
+				result = DEFAULT_OUT_ATTRIBUTE;
+			}
+		}
+		else if (keyword == ' .inner-attribute'){
+			if (result == null || result == ''){
+				result = DEFAULT_IN_ATTRIBUTE;
+			}
+		}
+		// Henry change end;
 		return result;
 	};
 
@@ -174,7 +192,7 @@ var setup = function(){
 			resultString += '</select>';
 		}
 		else if(attr == 'dictionary'){
-			resultString += '<input type="file" class="dictionary" placeholder="Enter File">';
+			resultString += '<input type="text" class="dictionary" placeholder="Enter File">';
 		}
 		else{
 			resultString += '<input type="text" class="' + classString + '" value="' + attrValue + '">';
@@ -368,6 +386,12 @@ var setup = function(){
 		var userLimit = getAttr(panel, ' .limit');
 		var userOffset = getAttr(panel, ' .offset');
 		var userAttributes = getAttr(panel, ' .attributes');
+
+		//
+		var userInAttributes = getAttr(panel, ' .inner-attribute');
+		var userOutAttributes = getAttr(panel, ' .outer-attribute');
+		//
+
 		var operatorName = $('#' + panel + ' button').attr('id');
 		var operatorId = operatorName + '_' + operatorI;
 		var operatorData = {
@@ -395,13 +419,18 @@ var setup = function(){
 		for(var extraOperator in extraOperators){
 		  operatorData.properties.attributes[extraOperator] = extraOperators[extraOperator];
 		}
-		operatorData.properties.attributes['attributes'] = userAttributes;
+		if(operatorName == "Join"){
+			operatorData.properties.inputs['input_2'] = {label: 'Input 2'};
+			operatorData.properties.attributes['inner_attribute'] = userInAttributes;
+			operatorData.properties.attributes['outer_attribute'] = userOutAttributes;
+		} else {
+			operatorData.properties.attributes['attributes'] = userAttributes;
+		}
+		// operatorData.properties.attributes['attributes'] = userAttributes;
 		operatorData.properties.attributes['limit'] = userLimit;
 		operatorData.properties.attributes['offset'] = userOffset;
 
-		if(operatorName == "Join"){
-			operatorData.properties.inputs['input_2'] = {label: 'Input 2'};
-		}
+
 
 		operatorI++;
 
@@ -467,7 +496,9 @@ var setup = function(){
 			}
 			operatorData.properties.attributes[attr] = result;
 		}
-
+		if(operatorName == "Join"){
+			operatorData.properties.inputs['input_2'] = {label: 'Input 2'};
+		}
 		$('#the-flowchart').flowchart('setOperatorData', operatorId, operatorData);
 
 		$('#the-flowchart').flowchart('selectOperator', operatorId);

@@ -44,9 +44,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="regex-panel" id='RegexMatcher' class="create-operator">Create operator</button><br/>
 					</div>
@@ -63,9 +63,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="keyword-panel" id='KeywordMatcher' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -82,9 +82,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="dictionary-panel" id='DictionaryMatcher' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -95,9 +95,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="fuzzy-panel" id='FuzzyTokenMatcher' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -122,9 +122,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="nlp-panel" id='NlpExtractor' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -143,9 +143,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="keyword-source-panel" id='KeywordSource' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -156,9 +156,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="file-sink-panel" id='FileSink' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -168,18 +168,32 @@
 					</div>
 				<li rel="join-panel" class="join-operator"><font color="orange"><i class="fa fa-plus-circle" aria-hidden="true"></i>Create Join</font></li>
 					<div id="join-panel" class="panel">
-						<em>Enter Attribute (Only One Allowed): </em><br/>
-						<input type="text" class='attributes' placeholder="first name"><br/>
-						<em>Enter Attribute ID: </em><br/>
-						<input type="text" class='value' placeholder="_id"><br/>
+						<!-- <em>Enter Attribute (Only One Allowed): </em><br/>
+						<input type="text" class='attributes' placeholder="first name"><br/> -->
+
+
+						<!-- <em>Enter Attribute ID: </em><br/>
+						<input type="text" class='value' placeholder="_id"><br/> -->
+
+						<em>Enter Inner Attribute: </em><br/>
+						<input type="text" class="inner-attribute" placeholder="name1"><br/>
+						<em>Enter Outer Attribute: </em><br/>
+						<input type="text" class= "outer-attribute" placeholder="name2"><br/>
+
+
+
 						<em>Enter Predicate Type: </em><br/>
-						<input type="text" class="predicate-type" placeholder="CharacterDistance"><br/>
+						<select class="predicate-type">
+							<option value = "CharacterDistance" selected>CharacterDistance</option>
+							<option value = "SimilarityJoin">SimilarityJoin</option>
+						</select><br/>
+						<!-- <input type="text" class="predicate-type" placeholder="CharacterDistance"><br/> -->
 						<em>Threshold: </em><br/>
-						<input type="text" class="distance" placeholder="100" value="100"><br/>
+						<input type="text" class="threshold" placeholder="100" value="100"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="join-panel" id='Join' class="create-operator">Create operator</button><br/><br/>
 					</div>
@@ -188,9 +202,9 @@
 						<em>Enter Attributes (Separated by commas): </em><br/>
 						<input type="text" class='attributes value' placeholder="first name, last name"><br/>
 						<!-- <em>Enter Limit (Optional): </em><br/> -->
-						<input type="text" class='limit' placeholder="10" value="10">
+						<!-- <input type="text" class='limit' placeholder="10" value="10"> -->
 						<!-- <em>Enter Offset (Optional): </em><br/> -->
-						<input type="text" class='offset' placeholder="5" value="5">
+						<!-- <input type="text" class='offset' placeholder="5" value="5"> -->
 						<br/>
 						<button rel="projection-panel" id='Projection' class="create-operator">Create operator</button><br/><br/>
 					</div>

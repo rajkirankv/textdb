@@ -116,13 +116,8 @@ button{
 }
 
 
-.matching-type, .nlp-type, .data-source, .predicate-type, .distance, .value, .attributes{
+.matching-type, .nlp-type, .data-source, .predicate-type, .threshold, .value, .attributes, .inner-attribute, .outer-attribute{
 	margin-bottom: 10px;
-}
-
-.limit , .offset{
-	margin-bottom: 10px;
-	display : none;
 }
 
 
@@ -227,7 +222,7 @@ i {
 
 /* Holds the attributes box */
 .popup{
-	height: 310px;
+	height: 320px;
 	width: 450px;
 	padding: 0px;
 	margin: 0px;
