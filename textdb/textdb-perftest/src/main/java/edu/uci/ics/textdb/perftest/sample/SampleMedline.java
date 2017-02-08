@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.exception.TextDBException;
+import edu.uci.ics.textdb.api.plan.Plan;
 import edu.uci.ics.textdb.common.constants.LuceneAnalyzerConstants;
 import edu.uci.ics.textdb.common.constants.SchemaConstants;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
@@ -22,14 +23,16 @@ import edu.uci.ics.textdb.dataflow.join.SimilarityJoinPredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcherSourceOperator;
 import edu.uci.ics.textdb.dataflow.projection.ProjectionOperator;
 import edu.uci.ics.textdb.dataflow.projection.ProjectionPredicate;
+import edu.uci.ics.textdb.dataflow.sink.FileSink;
 import edu.uci.ics.textdb.dataflow.sink.TupleStreamSink;
+import edu.uci.ics.textdb.engine.Engine;
 import edu.uci.ics.textdb.perftest.medline.MedlineIndexWriter;
 
 public class SampleMedline {
     
     public static final String MEDLINE_TABLE = "abstract_10K";
     
-    public static void main(String[] args) throws TextDBException {
+    public static void main(String[] args) throws Exception {
         extractDiabetes();
     }
     
@@ -61,10 +64,10 @@ public class SampleMedline {
         return result;
     }
     
-    public static void extractDiabetes() throws TextDBException {
+    public static void extractDiabetes() throws Exception {
         KeywordPredicate diabetesKeyword = new KeywordPredicate(
                 "diabetes", 
-                Arrays.asList(MedlineIndexWriter.ABSTRACT), 
+                Arrays.asList(MedlineIndexWriter.ABSTRACT, MedlineIndexWriter.ARTICLE_TITLE), 
                 LuceneAnalyzerConstants.getLuceneAnalyzer(LuceneAnalyzerConstants.standardAnalyzerString()), 
                 KeywordMatchingType.CONJUNCTION_INDEXBASED);
         
@@ -73,9 +76,9 @@ public class SampleMedline {
         
         KeywordPredicate heartFailureKeyword = new KeywordPredicate(
                 "heart failure",
-                Arrays.asList(MedlineIndexWriter.ABSTRACT),
+                Arrays.asList(MedlineIndexWriter.ABSTRACT, MedlineIndexWriter.ARTICLE_TITLE),
                 LuceneAnalyzerConstants.getLuceneAnalyzer(LuceneAnalyzerConstants.standardAnalyzerString()), 
-                KeywordMatchingType.CONJUNCTION_INDEXBASED);
+                KeywordMatchingType.PHRASE_INDEXBASED);
         
         KeywordMatcherSourceOperator keywordSourceHeartFailure = new KeywordMatcherSourceOperator(
                 heartFailureKeyword, MEDLINE_TABLE);
@@ -90,21 +93,26 @@ public class SampleMedline {
         ProjectionOperator project2 = new ProjectionOperator(projectOutSpan);
         
         DictionaryPredicate drugDict = new DictionaryPredicate(getDrugDictionary(), 
-                Arrays.asList(MedlineIndexWriter.ABSTRACT), 
+                Arrays.asList(MedlineIndexWriter.ABSTRACT, MedlineIndexWriter.ARTICLE_TITLE), 
                 LuceneAnalyzerConstants.getLuceneAnalyzer(LuceneAnalyzerConstants.standardAnalyzerString()),
                 KeywordMatchingType.CONJUNCTION_INDEXBASED);
         
         DictionaryMatcher dictMatcher1 = new DictionaryMatcher(drugDict);
         DictionaryMatcher dictMatcher2 = new DictionaryMatcher(drugDict);
         
-        SimilarityJoinPredicate simJoinPred = new SimilarityJoinPredicate(MedlineIndexWriter.ABSTRACT, 1.0);
+        SimilarityJoinPredicate simJoinPred = new SimilarityJoinPredicate(MedlineIndexWriter.ABSTRACT, 0.8);
         Join simJoin = new Join(simJoinPred);
         
-        ProjectionOperator project3 = new ProjectionOperator(
-                new ProjectionPredicate(getInnerOuterAttrs(Arrays.asList(
-                        MedlineIndexWriter.PMID, MedlineIndexWriter.ARTICLE_TITLE, MedlineIndexWriter.ABSTRACT))));
+        ArrayList<String> projectSimJoinAttrs = new ArrayList<>();
+        projectSimJoinAttrs.addAll(getInnerOuterAttrs(Arrays.asList(
+                MedlineIndexWriter.PMID, MedlineIndexWriter.ARTICLE_TITLE, MedlineIndexWriter.ABSTRACT)));
+        projectSimJoinAttrs.add(SchemaConstants.SPAN_LIST);
         
-        TupleStreamSink tupleStreamSink = new TupleStreamSink();
+        ProjectionOperator project3 = new ProjectionOperator(
+                new ProjectionPredicate(projectSimJoinAttrs));
+        
+        FileSink fileSink = new FileSink(new File("./medline_results.txt"));
+        fileSink.setToStringFunction(s -> Utils.getTupleString(s));
         
         
         project1.setInputOperator(keywordSourceDiabetes);
@@ -114,13 +122,16 @@ public class SampleMedline {
         simJoin.setInnerInputOperator(dictMatcher1);
         simJoin.setOuterInputOperator(dictMatcher2);
         project3.setInputOperator(simJoin);
-        tupleStreamSink.setInputOperator(project3);
+        fileSink.setInputOperator(project3);
         
-        tupleStreamSink.open();
-        List<ITuple> results = tupleStreamSink.collectAllTuples();
-        tupleStreamSink.close();
+        Engine.getEngine().evaluate(new Plan(fileSink));
         
-        System.out.println(Utils.getTupleListString(results));
+//        tupleStreamSink.open();
+//        List<ITuple> results = tupleStreamSink.collectAllTuples();
+//        tupleStreamSink.close();
+//        
+//        System.out.println(Utils.getTupleListString(results));
+//        System.out.println(results.size());
         
     }
     
