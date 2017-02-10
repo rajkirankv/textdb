@@ -11,11 +11,21 @@ var debug = null;
 var setup = function(){
 	var data = {};
 
+	//
+	// Panzoom initialization...
+	// $('#the-flowchart').panzoom({
+	// 	minScale : 0,
+	// 	$zoomRange : $("input[type = 'range']"),
+	// 	disablePan : true,
+	// 	disableZoom: true
+	// });
+
 	// Apply the plugin on a standard, empty div...
 	$('#the-flowchart').flowchart({
 		data: data,
 		multipleLinksOnOutput: true
 	});
+
 
 	var operatorI = 0;
 	var selectedOperator = '';
@@ -196,7 +206,7 @@ var setup = function(){
 			resultString += '</select>';
 		}
 		else if(attr == 'dictionary'){
-			resultString += '<input type="text" class="dictionary" placeholder="Enter File">';
+			resultString += '<input type="text" class="dictionary" placeholder="Enter Dictionary">';
 		}
 		else{
 			resultString += '<input type="text" class="' + classString + '" value="' + attrValue + '">';
@@ -493,15 +503,19 @@ var setup = function(){
 				}
 			}
 		};
-
 		for(var otherOperator in editOperators){
 			var attr = editOperators[otherOperator].replace(/-/, '_');
 			var result = $('.' + panel + ' .' + editOperators[otherOperator]).val();
 			if(((result == '') || (result == null)) && (attr == 'dictionary')){
 				result = DEFAULT_DICT;
 			}
+			if (result == 'null'){
+				result = null;
+			}
 			operatorData.properties.attributes[attr] = result;
 		}
+		console.log(JSON.stringify(operatorData));
+
 		if(operatorName == "Join"){
 			operatorData.properties.inputs['input_2'] = {label: 'Input 2'};
 		}
@@ -509,6 +523,9 @@ var setup = function(){
 
 		$('#the-flowchart').flowchart('selectOperator', operatorId);
 		selectedOperator = $('#the-flowchart').flowchart('getSelectedOperatorId');
+
+
+
 
 		data = $('#the-flowchart').flowchart('getData');
 		output = data['operators'][selectedOperator]['properties']['attributes'];
@@ -537,6 +554,9 @@ var setup = function(){
 
 		$('#the-flowchart').flowchart('deleteSelected');
 		data = $('#the-flowchart').flowchart('getData');
+
+		$('#switch').html('<i class="fa fa-minus-circle" aria-hidden="true"></i>Show Attributes');
+		closeBand();
 	};
 
 	/*
