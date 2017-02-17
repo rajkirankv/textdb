@@ -10,7 +10,7 @@ import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.textql.planbuilder.beans.PassThroughBean;
 import edu.uci.ics.textdb.textql.statements.predicates.ExtractPredicate;
-import edu.uci.ics.textdb.textql.statements.predicates.SelectPredicate;
+import edu.uci.ics.textdb.textql.statements.predicates.ProjectPredicate;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
 import edu.uci.ics.textdb.web.request.beans.OperatorLinkBean;
 
@@ -20,12 +20,12 @@ import edu.uci.ics.textdb.web.request.beans.OperatorLinkBean;
  * @author Flavio Bayer
  *
  */
-public class SelectExtractStatement extends Statement {
+public class SelectStatement extends Statement {
     
     /**
      * Predicate used for projection of the fields to be returned such as in "SELECT *".
      */
-    private SelectPredicate selectPredicate;
+    private ProjectPredicate projectPredicate;
     
     /**
      * Predicate used for data extraction such as keyword match in "KEYWORDMATCH(a,"word")".
@@ -49,26 +49,25 @@ public class SelectExtractStatement extends Statement {
     private Integer offsetClause;
       
     /**
-     * Create a { @code CreateViewStatement } with all the parameters set to { @code null }.
-     * @param id The id of the statement.
+     * Create a { @code SelectStatement } with all the parameters set to { @code null }.
      */
-    public SelectExtractStatement() {
+    public SelectStatement() {
         this(null, null, null, null, null, null);
     }
 
     /**
-     * Create a { @code CreateViewStatement } with the given parameters.
+     * Create a { @code SelectStatement } with the given parameters.
      * @param id The ID of this statement.
-     * @param selectPredicate The predicate for result projection.
+     * @param projectPredicate The predicate for result projection.
      * @param extractPredicate The predicate for data extraction.
      * @param fromClause The ID of the source view.
      * @param limitClause The value of the limit clause.
      * @param offsetClauseThe value of the offset clause.
      */
-    public SelectExtractStatement(String id, SelectPredicate selectPredicate, ExtractPredicate extractPredicate,
+    public SelectStatement(String id, ProjectPredicate projectPredicate, ExtractPredicate extractPredicate,
             String fromClause, Integer limitClause, Integer offsetClause) {
         super(id);
-        this.selectPredicate = selectPredicate;
+        this.projectPredicate = projectPredicate;
         this.extractPredicate = extractPredicate;
         this.fromClause = fromClause;
         this.limitClause = limitClause;
@@ -76,19 +75,19 @@ public class SelectExtractStatement extends Statement {
     }
     
     /**
-     * Get the select predicate.
-     * @return The select predicate.
+     * Get the project predicate.
+     * @return The project predicate.
      */
-    public SelectPredicate getSelectPredicate() {
-        return selectPredicate;
+    public ProjectPredicate getProjectPredicate() {
+        return projectPredicate;
     }
     
     /**
-     * Set the select predicate.
-     * @param selectPredicate The select predicate to be set.
+     * Set the project predicate.
+     * @param projectPredicate The project predicate to be set.
      */
-    public void setSelectPredicate(SelectPredicate selectPredicate) {
-        this.selectPredicate = selectPredicate;
+    public void setProjectPredicate(ProjectPredicate projectPredicate) {
+        this.projectPredicate = projectPredicate;
     }
     
     /**
@@ -167,10 +166,10 @@ public class SelectExtractStatement extends Statement {
     }
 
     /**
-     * Get the name of the bean built by the select predicate.
-     * @return The name of the bean built by the select predicate.
+     * Get the name of the bean built by the project predicate.
+     * @return The name of the bean built by the project predicate.
      */
-    private String getSelectionNodeID(){
+    private String getProjectionNodeID(){
         // Append "_p" to the id of the statement to create the id of the bean, where "p" stands for Projection.
         return super.getId() + "_p";
     }
@@ -195,10 +194,10 @@ public class SelectExtractStatement extends Statement {
         // Build and append a PassThroughBean as an alias for this Statement
         operators.add(new PassThroughBean(getOutputNodeID(), "PassThrough"));
         // Build and append bean for Projection
-        if(this.selectPredicate==null){
-            operators.add(new PassThroughBean(getSelectionNodeID(), "PassThrough"));
+        if(this.projectPredicate==null){
+            operators.add(new PassThroughBean(getProjectionNodeID(), "PassThrough"));
         }else{
-            operators.add(this.selectPredicate.generateOperatorBean(getSelectionNodeID()));
+            operators.add(this.projectPredicate.generateOperatorBean(getProjectionNodeID()));
         }
         // Build and append bean for Extraction predicate
         if(this.extractPredicate==null){
@@ -220,8 +219,8 @@ public class SelectExtractStatement extends Statement {
     @Override
     public List<OperatorLinkBean> getInternalLinkBeans(){
         return Arrays.asList(
-                   new OperatorLinkBean(getSelectionNodeID(), getOutputNodeID()),
-                   new OperatorLinkBean(getExtractionNodeID(), getSelectionNodeID()),
+                   new OperatorLinkBean(getProjectionNodeID(), getOutputNodeID()),
+                   new OperatorLinkBean(getExtractionNodeID(), getProjectionNodeID()),
                    new OperatorLinkBean(getInputNodeID(), getExtractionNodeID())
                );
     }
@@ -274,8 +273,8 @@ public class SelectExtractStatement extends Statement {
         if (extractPredicate != null) {
             outputSchema = extractPredicate.generateOutputSchema(outputSchema);
         }
-        if (selectPredicate != null) {
-            outputSchema = selectPredicate.generateOutputSchema(outputSchema);
+        if (projectPredicate != null) {
+            outputSchema = projectPredicate.generateOutputSchema(outputSchema);
         }
         return outputSchema;
     }
@@ -285,14 +284,14 @@ public class SelectExtractStatement extends Statement {
     public boolean equals(Object other) {
         if (other == null) { return false; }
         if (other.getClass() != this.getClass()) { return false; }
-        SelectExtractStatement selectExtractStatement = (SelectExtractStatement) other;
+        SelectStatement selectStatement = (SelectStatement) other;
         return new EqualsBuilder()
-                    .appendSuper(super.equals(selectExtractStatement))
-                    .append(selectPredicate, selectExtractStatement.selectPredicate)
-                    .append(extractPredicate, selectExtractStatement.extractPredicate)
-                    .append(fromClause, selectExtractStatement.fromClause)
-                    .append(limitClause, selectExtractStatement.limitClause)
-                    .append(offsetClause, selectExtractStatement.offsetClause)
+                    .appendSuper(super.equals(selectStatement))
+                    .append(projectPredicate, selectStatement.projectPredicate)
+                    .append(extractPredicate, selectStatement.extractPredicate)
+                    .append(fromClause, selectStatement.fromClause)
+                    .append(limitClause, selectStatement.limitClause)
+                    .append(offsetClause, selectStatement.offsetClause)
                     .isEquals();
     }
     

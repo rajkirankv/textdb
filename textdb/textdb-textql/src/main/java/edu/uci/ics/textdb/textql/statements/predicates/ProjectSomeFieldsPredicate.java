@@ -1,6 +1,5 @@
 package edu.uci.ics.textdb.textql.statements.predicates;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,7 +8,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.api.exception.TextDBException;
-import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.web.request.beans.OperatorBean;
 import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
 
@@ -20,7 +18,7 @@ import edu.uci.ics.textdb.web.request.beans.ProjectionBean;
  * @author Flavio Bayer
  *
  */
-public class SelectSomeFieldsPredicate implements SelectPredicate {
+public class ProjectSomeFieldsPredicate implements ProjectPredicate {
 
     /**
      * The { @link List } of fields to be projected if it is specified as
@@ -32,7 +30,7 @@ public class SelectSomeFieldsPredicate implements SelectPredicate {
      * Create a { @code Statement } with the given list of field names to be projected.
      * @param projectedFields The list of field names to be projected.
      */
-    public SelectSomeFieldsPredicate(List<String> projectedFields){
+    public ProjectSomeFieldsPredicate(List<String> projectedFields){
         this.projectedFields = projectedFields;
     }
     
@@ -55,11 +53,11 @@ public class SelectSomeFieldsPredicate implements SelectPredicate {
     
     /**
      * Return this operator converted to an { @code OperatorBean }.
-     * @param selectOperatorId The ID of the OperatorBean to be created.
+     * @param projectOperatorId The ID of the OperatorBean to be created.
      */
-    public OperatorBean generateOperatorBean(String selectOperatorId) {
+    public OperatorBean generateOperatorBean(String projectOperatorId) {
         ProjectionBean projectionBean = new ProjectionBean();
-        projectionBean.setOperatorID(selectOperatorId);
+        projectionBean.setOperatorID(projectOperatorId);
         projectionBean.setOperatorType("Projection");
         projectionBean.setAttributes(String.join(",", this.getProjectedFields()));
         return projectionBean;
@@ -106,9 +104,9 @@ public class SelectSomeFieldsPredicate implements SelectPredicate {
     public boolean equals(Object other) {
         if (other == null) { return false; }
         if (other.getClass() != getClass()) { return false; }
-        SelectSomeFieldsPredicate selectFieldsPredicate = (SelectSomeFieldsPredicate) other;
+        ProjectSomeFieldsPredicate projectSomeFieldsPredicate = (ProjectSomeFieldsPredicate) other;
         return new EqualsBuilder()
-                .append(projectedFields, selectFieldsPredicate.projectedFields)
+                .append(projectedFields, projectSomeFieldsPredicate.projectedFields)
                 .isEquals();
     }
 }

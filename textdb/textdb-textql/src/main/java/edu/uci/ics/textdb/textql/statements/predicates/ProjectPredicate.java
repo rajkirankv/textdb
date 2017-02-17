@@ -7,20 +7,20 @@ import edu.uci.ics.textdb.web.request.beans.OperatorBean;
 /**
  * Interface for representation of a "SELECT (...)" predicate inside a { @code SelectExtractStatement }.
  * Subclasses have specific fields related to its projection functionalities.
- * SelectPredicate --+ SelectAllFieldsPredicate
- *                   + SelectSomeFieldsPredicate
+ * ProjectPredicate --+ ProjectAllFieldsPredicate
+ *                    + ProjectSomeFieldsPredicate
  * 
  * @author Flavio Bayer
  *
  */
-public interface SelectPredicate {
+public interface ProjectPredicate {
 
     /**
      * Return this operator converted to an { @code OperatorBean }.
-     * @param selectOperatorId The ID of the OperatorBean to be created.
+     * @param projectOperatorId The ID of the OperatorBean to be created.
      */
-    public OperatorBean generateOperatorBean(String selectOperatorId);
-    
+    public OperatorBean generateOperatorBean(String projectOperatorId);
+
     /**
      * Generate the resulting output schema, based on the given input schema,
      * after the projection operation is performed.
@@ -29,5 +29,5 @@ public interface SelectPredicate {
      * @throws TextDBException If a required attribute is not present.
      */
     public Schema generateOutputSchema(Schema inputSchema) throws TextDBException;
-
+    
 }
