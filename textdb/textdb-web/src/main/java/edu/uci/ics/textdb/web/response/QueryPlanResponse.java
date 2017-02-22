@@ -1,7 +1,7 @@
 package edu.uci.ics.textdb.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.uci.ics.textdb.web.response.beans.QueryPlanBean;
+import edu.uci.ics.textdb.web.request.beans.QueryPlanBean;
 
 import java.util.ArrayList;
 
