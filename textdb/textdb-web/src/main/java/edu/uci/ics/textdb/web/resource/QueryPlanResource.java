@@ -2,17 +2,23 @@ package edu.uci.ics.textdb.web.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.uci.ics.textdb.api.common.ITuple;
+import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.api.plan.Plan;
+import edu.uci.ics.textdb.api.storage.IDataReader;
 import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.sink.TupleStreamSink;
 import edu.uci.ics.textdb.engine.Engine;
+import edu.uci.ics.textdb.planstore.PlanStore;
+import edu.uci.ics.textdb.planstore.PlanStoreConstants;
 import edu.uci.ics.textdb.web.request.QueryPlanRequest;
 import edu.uci.ics.textdb.web.response.QueryPlanResponse;
 import edu.uci.ics.textdb.web.response.SampleResponse;
+import edu.uci.ics.textdb.web.response.beans.QueryPlanBean;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +91,33 @@ public class QueryPlanResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public QueryPlanResponse getQueryPlans() {
-        QueryPlanResponse queryPlanResponse = new QueryPlanResponse(new ArrayList<QueryPlanRequest>());
+        ArrayList<QueryPlanBean> queryPlans = new ArrayList<>();
+
+        try {
+            // Getting an iterator for the plan store
+            PlanStore planStore = PlanStore.getInstance();
+            IDataReader reader = planStore.getPlanIterator();
+            reader.open();
+
+            // ObjectMapper created for translating logical plan JSON to an object
+            ObjectMapper mapper = new ObjectMapper();
+
+            // Iterating through the stored plans, and mapping them to a QueryPlanRequest object
+            ITuple tuple;
+            while ((tuple = reader.getNextTuple()) != null) {
+                String name = tuple.getField(PlanStoreConstants.NAME).getValue().toString();
+                String description = tuple.getField(PlanStoreConstants.DESCRIPTION).getValue().toString();
+                String filePath = tuple.getField(PlanStoreConstants.FILE_PATH).getValue().toString();
+                String logicalPlanJson = planStore.readPlanJson(filePath);
+                queryPlans.add(new QueryPlanBean(name, description,
+                        mapper.readValue(logicalPlanJson, QueryPlanRequest.class)));
+            }
+        }
+        catch (TextDBException | IOException e) {
+            e.printStackTrace();
+        }
+
+        QueryPlanResponse queryPlanResponse = new QueryPlanResponse(queryPlans);
         return queryPlanResponse;
     }
 }
