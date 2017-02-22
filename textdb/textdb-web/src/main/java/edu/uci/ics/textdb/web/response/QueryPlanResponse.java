@@ -1,7 +1,7 @@
 package edu.uci.ics.textdb.web.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.uci.ics.textdb.web.request.QueryPlanRequest;
+import edu.uci.ics.textdb.web.response.beans.QueryPlanBean;
 
 import java.util.ArrayList;
 
@@ -11,22 +11,22 @@ import java.util.ArrayList;
 public class QueryPlanResponse {
 
     @JsonProperty("query_plans")
-    private ArrayList<QueryPlanRequest> queryPlans;
+    private ArrayList<QueryPlanBean> queryPlans;
 
     public QueryPlanResponse() {
     }
 
-    public QueryPlanResponse(ArrayList<QueryPlanRequest> queryPlans) {
+    public QueryPlanResponse(ArrayList<QueryPlanBean> queryPlans) {
         this.queryPlans = queryPlans;
     }
 
     @JsonProperty("query_plans")
-    public ArrayList<QueryPlanRequest> getQueryPlans() {
+    public ArrayList<QueryPlanBean> getQueryPlans() {
         return queryPlans;
     }
 
     @JsonProperty("query_plans")
-    public void setQueryPlans(ArrayList<QueryPlanRequest> queryPlans) {
+    public void setQueryPlans(ArrayList<QueryPlanBean> queryPlans) {
         this.queryPlans = queryPlans;
     }
 }
