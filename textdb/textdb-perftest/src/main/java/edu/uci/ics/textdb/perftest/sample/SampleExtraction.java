@@ -53,7 +53,7 @@ public class SampleExtraction {
             // Checking if the resource is in a jar
             String referencePath = SampleExtraction.class.getResource("").toURI().toString();
             if(referencePath.substring(0, 3).equals("jar")) {
-////                final URI uri = SampleExtraction.class.getResource("/").toURI();
+//                final URI uri = SampleExtraction.class.getResource("/").toURI();
 //                final URI uri = new URI(referencePath.substring(0, referencePath.indexOf(".jar") + 4));
 //                final URI promedFilesDirectoryUri = SampleExtraction.class.getResource("/sample-data-files/promed/").toURI();
 //                Map<String, String> env = new HashMap<>();
@@ -63,8 +63,8 @@ public class SampleExtraction {
 //                    System.out.println(promedFilesDirectory);
 //
 //                }
-////                promedFilesDirectory = SampleExtraction.class.getResource("/sample-data-files/promed/").getPath();
-////                System.out.println(promedFilesDirectory);
+//                promedFilesDirectory = SampleExtraction.class.getResource("/sample-data-files/promed/").getPath();
+//                System.out.println(promedFilesDirectory);
                 promedFilesDirectory = "../textdb-perftest/src/main/resources/sample-data-files/promed/";
                 promedIndexDirectory = "../textdb-perftest/src/main/resources/index/standard/promed/";
                 sampleDataFilesDirectory = "../textdb-perftest/src/main/resources/sample-data-files/";
@@ -80,19 +80,8 @@ public class SampleExtraction {
                         .toURI())
                         .toString();
             }
-
-//            System.out.println(SampleExtraction.class.getResource("").toURI().toString());
-//            promedFilesDirectory = SampleExtraction.class.getResource("/sample-data-files/promed").toURI().toString();
-//            System.out.println(promedFilesDirectory);
-//            promedIndexDirectory = Paths.get(SampleExtraction.class.getResource("/index/standard")
-//                    .toURI())
-//                    .toString() + "/promed";
-//            sampleDataFilesDirectory = Paths.get(SampleExtraction.class.getResource("/sample-data-files")
-//                    .toURI())
-//                    .toString();
         }
         catch(URISyntaxException | FileSystemNotFoundException e) {
-            System.out.println("This is the problem");
             e.printStackTrace();
         }
     }
