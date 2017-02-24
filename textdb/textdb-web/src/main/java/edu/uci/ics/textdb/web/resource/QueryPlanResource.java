@@ -112,8 +112,7 @@ public class QueryPlanResource {
             while ((tuple = reader.getNextTuple()) != null) {
                 String name = tuple.getField(PlanStoreConstants.NAME).getValue().toString();
                 String description = tuple.getField(PlanStoreConstants.DESCRIPTION).getValue().toString();
-                String filePath = tuple.getField(PlanStoreConstants.FILE_PATH).getValue().toString();
-                String logicalPlanJson = planStore.readPlanJson(filePath);
+                String logicalPlanJson = tuple.getField(PlanStoreConstants.LOGICAL_PLAN_JSON).getValue().toString();
                 queryPlans.add(new QueryPlanBean(name, description,
                         mapper.readValue(logicalPlanJson, QueryPlanRequest.class)));
             }
