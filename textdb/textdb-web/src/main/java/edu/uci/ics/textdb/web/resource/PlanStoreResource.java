@@ -98,4 +98,18 @@ public class PlanStoreResource {
 
         return Response.status(200).build();
     }
+
+    @DELETE
+    @Path("/{plan_name}")
+    public Response deleteQueryPlan(@PathParam("plan_name") String planName) {
+        try {
+            // Deleting the plan from the plan store
+            planStore.deletePlan(planName);
+        }
+        catch(TextDBException e) {
+            e.printStackTrace();
+            return Response.status(400).build();
+        }
+        return Response.status(200).build();
+    }
 }
