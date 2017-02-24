@@ -23,9 +23,12 @@ import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
 import edu.uci.ics.textdb.dataflow.sink.FileSink;
 import edu.uci.ics.textdb.engine.Engine;
 import edu.uci.ics.textdb.perftest.promed.PromedSchema;
+import edu.uci.ics.textdb.storage.DataWriter;
+import edu.uci.ics.textdb.storage.RelationManager;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystemNotFoundException;
@@ -35,8 +38,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
-import edu.uci.ics.textdb.storage.DataWriter;
-import edu.uci.ics.textdb.storage.RelationManager;
 
 public class SampleExtraction {
     
@@ -53,18 +54,6 @@ public class SampleExtraction {
             // Checking if the resource is in a jar
             String referencePath = SampleExtraction.class.getResource("").toURI().toString();
             if(referencePath.substring(0, 3).equals("jar")) {
-//                final URI uri = SampleExtraction.class.getResource("/").toURI();
-//                final URI uri = new URI(referencePath.substring(0, referencePath.indexOf(".jar") + 4));
-//                final URI promedFilesDirectoryUri = SampleExtraction.class.getResource("/sample-data-files/promed/").toURI();
-//                Map<String, String> env = new HashMap<>();
-//                env.put("create", "true");
-//                try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
-//                    promedFilesDirectory = Paths.get(promedFilesDirectoryUri).toString();
-//                    System.out.println(promedFilesDirectory);
-//
-//                }
-//                promedFilesDirectory = SampleExtraction.class.getResource("/sample-data-files/promed/").getPath();
-//                System.out.println(promedFilesDirectory);
                 promedFilesDirectory = "../textdb-perftest/src/main/resources/sample-data-files/promed/";
                 promedIndexDirectory = "../textdb-perftest/src/main/resources/index/standard/promed/";
                 sampleDataFilesDirectory = "../textdb-perftest/src/main/resources/sample-data-files/";

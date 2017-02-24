@@ -14,7 +14,6 @@ import edu.uci.ics.textdb.web.request.beans.NlpExtractorBean;
 import edu.uci.ics.textdb.web.request.beans.TupleStreamSinkBean;
 import edu.uci.ics.textdb.web.resource.PlanStoreResource;
 import edu.uci.ics.textdb.web.resource.QueryPlanResource;
-import edu.uci.ics.textdb.web.resource.SampleResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -49,11 +48,6 @@ public class TextdbWebApplication extends Application<TextdbWebConfiguration> {
 
     @Override
     public void run(TextdbWebConfiguration textdbWebConfiguration, Environment environment) throws Exception {
-        // Creates an instance of the SampleResource class to register with Jersey
-        final SampleResource sampleResource = new SampleResource();
-        // Registers the SampleResource with Jersey
-        environment.jersey().register(sampleResource);
-
         // Creates an instance of the QueryPlanResource class to register with Jersey
         final QueryPlanResource queryPlanResource = new QueryPlanResource();
         // Registers the QueryPlanResource with Jersey

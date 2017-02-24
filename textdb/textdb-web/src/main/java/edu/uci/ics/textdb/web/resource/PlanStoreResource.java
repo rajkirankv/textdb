@@ -1,5 +1,6 @@
 package edu.uci.ics.textdb.web.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,6 +109,20 @@ public class PlanStoreResource {
         }
         catch(TextDBException e) {
             e.printStackTrace();
+            return Response.status(400).build();
+        }
+        return Response.status(200).build();
+    }
+
+    @PUT
+    @Path("/{plan_name}")
+    public Response updateQueryPlan(@PathParam("plan_name") String planName, QueryPlanBean queryPlanBean) {
+        try {
+            // Updating the plan in the plan store
+            planStore.updatePlan(planName, queryPlanBean.getDescription(),
+                    mapper.writeValueAsString(queryPlanBean.getQueryPlan()));
+        }
+        catch(JsonProcessingException | TextDBException e) {
             return Response.status(400).build();
         }
         return Response.status(200).build();

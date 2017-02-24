@@ -18,7 +18,6 @@ import java.util.Iterator;
  * properties for a given logical query plan.
  * Created by kishorenarendran on 10/21/16.
  */
-//@JsonIgnoreProperties(value = {"operatorProperties", "logicalPlan"}, ignoreUnknown = true)
 public class QueryPlanRequest {
     @JsonProperty("operators")
     private ArrayList<OperatorBean> operatorBeans;
