@@ -23,11 +23,9 @@ import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
 import edu.uci.ics.textdb.dataflow.sink.FileSink;
 import edu.uci.ics.textdb.engine.Engine;
 import edu.uci.ics.textdb.perftest.promed.PromedSchema;
-import edu.uci.ics.textdb.storage.relation.RelationManager;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystemNotFoundException;
@@ -37,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
+import edu.uci.ics.textdb.storage.DataWriter;
+import edu.uci.ics.textdb.storage.RelationManager;
 
 public class SampleExtraction {
     
@@ -129,10 +129,12 @@ public class SampleExtraction {
         relationManager.createTable(PROMED_SAMPLE_TABLE, promedIndexDirectory, 
                 PromedSchema.PROMED_SCHEMA, LuceneAnalyzerConstants.standardAnalyzerString());
         
+        DataWriter dataWriter = relationManager.getTableDataWriter(PROMED_SAMPLE_TABLE);
+        dataWriter.open();
         for (ITuple tuple : fileTuples) {
-            relationManager.insertTuple(PROMED_SAMPLE_TABLE, tuple);
+            dataWriter.insertTuple(tuple);
         }
-        
+        dataWriter.close();
     }
 
     /*
@@ -175,7 +177,7 @@ public class SampleExtraction {
         NlpPredicate nlpPredicateLocation = new NlpPredicate(NlpPredicate.NlpTokenType.Location, Arrays.asList(PromedSchema.CONTENT));
         NlpExtractor nlpExtractorLocation = new NlpExtractor(nlpPredicateLocation);
 
-        IJoinPredicate joinPredicatePersonLocation = new JoinDistancePredicate(PromedSchema.ID, PromedSchema.CONTENT, 100);
+        IJoinPredicate joinPredicatePersonLocation = new JoinDistancePredicate(PromedSchema.CONTENT, 100);
         Join joinPersonLocation = new Join(joinPredicatePersonLocation);
         
         ProjectionPredicate projectionPredicateIdAndSpan = new ProjectionPredicate(

@@ -1,7 +1,6 @@
 package edu.uci.ics.textdb.planstore;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import edu.uci.ics.textdb.api.common.IField;
 import edu.uci.ics.textdb.api.common.ITuple;
@@ -14,22 +13,18 @@ import edu.uci.ics.textdb.common.exception.StorageException;
 import edu.uci.ics.textdb.common.field.DataTuple;
 import edu.uci.ics.textdb.common.field.IDField;
 import edu.uci.ics.textdb.common.field.StringField;
-import edu.uci.ics.textdb.common.utils.Utils;
-import edu.uci.ics.textdb.storage.relation.RelationManager;
+import edu.uci.ics.textdb.storage.DataWriter;
+import edu.uci.ics.textdb.storage.RelationManager;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * An implementation of query plan store.
  *
- * @author Adrian Seungjin Lee, Kishore Narendran
+ * @author Adrian Seungjin Lee
+ * @author Kishore Narendran
  */
 public class PlanStore {
     private static PlanStore instance = null;
@@ -58,11 +53,6 @@ public class PlanStore {
                     PlanStoreConstants.SCHEMA_PLAN,
                     LuceneAnalyzerConstants.standardAnalyzerString());
         }
-
-        File filesDir = new File(PlanStoreConstants.FILES_DIR);
-        if (!filesDir.exists()) {
-            filesDir.mkdir();
-        }
     }
 
     /**
@@ -72,8 +62,6 @@ public class PlanStore {
      */
     public void destroyPlanStore() throws TextDBException {
         relationManager.deleteTable(PlanStoreConstants.TABLE_NAME);
-
-        Utils.deleteDirectory(PlanStoreConstants.FILES_DIR);
     }
 
     /**
@@ -97,14 +85,19 @@ public class PlanStore {
             throw new TextDBException("A plan with the same name already exists");
         }
 
-        String filePath = PlanStoreConstants.FILES_DIR + "/" + planName + PlanStoreConstants.FILE_SUFFIX;
+        // Converting the JSON String to a JSON Node to minimize space usage and to check validity of JSON string
+        JsonParser jsonParser = new JsonParser();
+        JsonObject jsonObject = jsonParser.parse(logicalPlanJson).getAsJsonObject();
+
         ITuple tuple = new DataTuple(PlanStoreConstants.SCHEMA_PLAN,
                 new StringField(planName),
                 new StringField(description),
-                new StringField(filePath));
+                new StringField(jsonObject.toString()));
 
-        IDField id = relationManager.insertTuple(PlanStoreConstants.TABLE_NAME, tuple);
-        writePlanJson(logicalPlanJson, filePath);
+        DataWriter dataWriter = relationManager.getTableDataWriter(PlanStoreConstants.TABLE_NAME);
+        dataWriter.open();
+        IDField id = dataWriter.insertTuple(tuple);
+        dataWriter.close();
 
         return id;
     }
@@ -119,7 +112,7 @@ public class PlanStore {
     public ITuple getPlan(String planName) throws TextDBException {
         Query q = new TermQuery(new Term(PlanStoreConstants.NAME, planName));
 
-        IDataReader reader = relationManager.getTuples(PlanStoreConstants.TABLE_NAME, q);
+        IDataReader reader = relationManager.getTableDataReader(PlanStoreConstants.TABLE_NAME, q);
         reader.open();
 
         ITuple inputTuple = null;
@@ -143,7 +136,7 @@ public class PlanStore {
      * @throws TextDBException
      */
     public IDataReader getPlanIterator() throws TextDBException {
-        return relationManager.scanTable(PlanStoreConstants.TABLE_NAME);
+        return relationManager.getTableDataReader(PlanStoreConstants.TABLE_NAME, new MatchAllDocsQuery());
     }
 
     /**
@@ -159,11 +152,12 @@ public class PlanStore {
             return;
         }
 
-        IField idField = plan.getField(SchemaConstants._ID);
-        relationManager.deleteTuple(PlanStoreConstants.TABLE_NAME, idField);
-
-        IField filePathField = plan.getField(PlanStoreConstants.FILE_PATH);
-        deletePlanObject(filePathField.getValue().toString());
+        IDField idField = (IDField) plan.getField(SchemaConstants._ID);
+        
+        DataWriter dataWriter = relationManager.getTableDataWriter(PlanStoreConstants.TABLE_NAME);        
+        dataWriter.open();
+        dataWriter.deleteTupleByID(idField);
+        dataWriter.close();
     }
 
     /**
@@ -201,7 +195,7 @@ public class PlanStore {
     /**
      * Updates both plan description and plan json of a plan with the given plan name.
      * If description is null, it will not update plan description.
-     * If plan json is null, it will not update plan object.
+     * If plan json is NULL, it will not update the plan's JSON file.
      *
      * @param planName, the name of the plan.
      * @param description, the new description of the plan.
@@ -215,77 +209,36 @@ public class PlanStore {
             return;
         }
 
-        if (description != null) {
-            IField idField = existingPlan.getField(SchemaConstants._ID);
-            IField descriptionField = new StringField(description);
-            ITuple newTuple = new DataTuple(PlanStoreConstants.SCHEMA_PLAN,
-                    new StringField(planName),
-                    descriptionField,
-                    existingPlan.getField(PlanStoreConstants.FILE_PATH));
-            relationManager.updateTuple(PlanStoreConstants.TABLE_NAME, newTuple, (IDField) idField);
+        // Checking if an updated description or logical plan JSON string has been provided
+        if(description == null && logicalPlanJson == null) {
+            return;
         }
 
-        if (logicalPlanJson != null) {
-            IField filePathField = existingPlan.getField(PlanStoreConstants.FILE_PATH);
-            String filePath = filePathField.getValue().toString();
-            deletePlanObject(filePath);
-            writePlanJson(logicalPlanJson, filePath);
-        }
-    }
-
-    /**
-     * Retrieves the Logical Plan in JSON format at the given file path
-     * @param filePath, the file path of the logical plan JSON
-     * @return String
-     * @throws TextDBException
-     */
-    public String readPlanJson(String filePath) throws TextDBException {
-        try {
-            // Reading the Logical JSON string as bytes
-            byte[] encoded = Files.readAllBytes(Paths.get(filePath));
-            return new String(encoded);
-        }
-        catch (IOException e) {
-            throw new TextDBException("Failed to read the Logical Plan's JSON");
-        }
-    }
-
-    /**
-     * Writes the given Logical Plan JSON to a .json file, at the given file path
-     * @param logicalPlanJson, the logical plan JSON in String format
-     * @param filePath, the file path of the logical plan JSON file
-     * @throws TextDBException
-     */
-    private void writePlanJson(String logicalPlanJson, String filePath) throws TextDBException {
-        try {
-            // Converting the JSON String to a JSON Node to minimize space usage and to check validity of JSON string
+        // Checking if the logical plan JSON string needs to be updated
+        if(logicalPlanJson != null) {
+            // Compressing and checking the validity of the logical plan JSON string
             JsonParser jsonParser = new JsonParser();
             JsonObject jsonObject = jsonParser.parse(logicalPlanJson).getAsJsonObject();
+            logicalPlanJson = jsonObject.toString();
+        }
 
-            // Writing to the logical JSON string to a file
-            FileWriter fileWriter = new FileWriter(filePath);
-            fileWriter.write(jsonObject.toString());
-            fileWriter.flush();
-            fileWriter.close();
-        }
-        catch (JsonParseException e) {
-            throw new TextDBException("Logical Plan JSON is invalid", e);
-        }
-        catch (IOException e) {
-            throw new TextDBException("Failed to write the Logical Plan JSON", e);
-        }
-    }
+        // Getting the fields in order for performing the update
+        IDField idField = (IDField) existingPlan.getField(SchemaConstants._ID);
+        IField descriptionField = description != null ?
+                new StringField(description) : existingPlan.getField(PlanStoreConstants.DESCRIPTION);
+        IField logicalPlanJsonField = logicalPlanJson != null ?
+                new StringField(logicalPlanJson) : existingPlan.getField(PlanStoreConstants.LOGICAL_PLAN_JSON);
 
-    /**
-     * Removes a plan object stored in the given file path.
-     *
-     * @param filePath, the file path of the plan object.
-     * @throws TextDBException
-     */
-    private void deletePlanObject(String filePath) {
-        File planFile = new File(filePath);
-        if (planFile.exists()) {
-            planFile.delete();
-        }
+        // Creating a tuple out of all the fields
+        ITuple newTuple = new DataTuple(PlanStoreConstants.SCHEMA_PLAN,
+                new StringField(planName),
+                descriptionField,
+                logicalPlanJsonField);
+
+        // Writing the updated tuple
+        DataWriter dataWriter = relationManager.getTableDataWriter(PlanStoreConstants.TABLE_NAME);
+        dataWriter.open();
+        dataWriter.updateTuple(newTuple, idField);
+        dataWriter.close();
     }
 }
