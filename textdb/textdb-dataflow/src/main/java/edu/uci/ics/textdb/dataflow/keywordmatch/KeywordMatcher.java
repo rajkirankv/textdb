@@ -73,13 +73,13 @@ public class KeywordMatcher extends AbstractSingleInputOperator {
             inputTuple = Utils.getSpanTuple(inputTuple.getFields(), new ArrayList<Span>(), outputSchema);
         }
 
-        if (this.predicate.getOperatorType() == DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED) {
             resultTuple = computeConjunctionMatchingResult(inputTuple);
         }
-        if (this.predicate.getOperatorType() == DataConstants.KeywordMatchingType.PHRASE_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == DataConstants.KeywordMatchingType.PHRASE_INDEXBASED) {
             resultTuple = computePhraseMatchingResult(inputTuple);
         }
-        if (this.predicate.getOperatorType() == DataConstants.KeywordMatchingType.SUBSTRING_SCANBASED) {
+        if (this.predicate.getKeywordMatchingType() == DataConstants.KeywordMatchingType.SUBSTRING_SCANBASED) {
             resultTuple = computeSubstringMatchingResult(inputTuple);
         }
 

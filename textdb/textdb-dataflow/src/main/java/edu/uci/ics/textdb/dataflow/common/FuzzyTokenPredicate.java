@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.lucene.analysis.Analyzer;
 
 import edu.uci.ics.textdb.api.common.IPredicate;
-import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.utils.Utils;
 
 /*
@@ -24,17 +23,24 @@ public class FuzzyTokenPredicate implements IPredicate {
     private Analyzer luceneAnalyzer;
     private double thresholdRatio;
     private int threshold;
+    private String spanListName;
 
     public FuzzyTokenPredicate(String query, List<String> attributeNames, Analyzer analyzer,
-            double thresholdRatio) throws DataFlowException {
+            double thresholdRatio) {
+        this(query, attributeNames, analyzer, thresholdRatio, null);
+    }
+    
+    public FuzzyTokenPredicate(String query, List<String> attributeNames, Analyzer analyzer,
+            double thresholdRatio, String spanListName) {
         this.thresholdRatio = thresholdRatio;
         this.luceneAnalyzer = analyzer;
         this.query = query;
         this.tokens = Utils.tokenizeQuery(analyzer, query);
         this.computeThreshold();
         this.attributeNames = attributeNames;
+        this.spanListName = spanListName;
     }
-
+    
     public List<String> getAttributeNames() {
         return this.attributeNames;
     }
@@ -70,5 +76,9 @@ public class FuzzyTokenPredicate implements IPredicate {
     public double getThresholdRatio() {
         return this.thresholdRatio;
     }
-
+    
+    public String getSpanListName() {
+        return this.spanListName;
+    }
+    
 }

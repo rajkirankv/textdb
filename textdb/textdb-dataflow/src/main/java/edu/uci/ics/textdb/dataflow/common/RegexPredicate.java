@@ -2,10 +2,7 @@ package edu.uci.ics.textdb.dataflow.common;
 
 import java.util.List;
 
-import org.apache.lucene.analysis.Analyzer;
-
 import edu.uci.ics.textdb.api.common.IPredicate;
-import edu.uci.ics.textdb.common.exception.DataFlowException;
 
 
 /**
@@ -18,27 +15,30 @@ import edu.uci.ics.textdb.common.exception.DataFlowException;
 public class RegexPredicate implements IPredicate {
 
     private String regex;
-    private List<String> attributeNames;
+    private List<String> attributeNames;  
+    private String spanListName;
 
-    private Analyzer luceneAnalyzer;
 
-
-    public RegexPredicate(String regex, List<String> attributeNames, Analyzer analyzer) throws DataFlowException {
+    public RegexPredicate(String regex, List<String> attributeNames) {
+        this(regex, attributeNames, null);
+    }
+    
+    public RegexPredicate(String regex, List<String> attributeNames, String spanListName) {
         this.regex = regex;
-        this.luceneAnalyzer = analyzer;
         this.attributeNames = attributeNames;
+        this.spanListName = spanListName;
     }
 
     public String getRegex() {
         return regex;
     }
 
-    public Analyzer getLuceneAnalyzer() {
-        return this.luceneAnalyzer;
-    }
-
     public List<String> getAttributeNames() {
         return attributeNames;
+    }
+    
+    public String getSpanListName() {
+        return this.spanListName;
     }
 
 }

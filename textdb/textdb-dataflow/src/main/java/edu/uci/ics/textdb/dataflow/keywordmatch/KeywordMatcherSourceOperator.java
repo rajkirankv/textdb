@@ -118,13 +118,13 @@ public class KeywordMatcherSourceOperator extends AbstractSingleInputOperator im
      */
     private Query createLuceneQueryObject() throws DataFlowException {
         Query query = null;
-        if (this.predicate.getOperatorType() == KeywordMatchingType.CONJUNCTION_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == KeywordMatchingType.CONJUNCTION_INDEXBASED) {
             query = buildConjunctionQuery();
         }
-        if (this.predicate.getOperatorType() == KeywordMatchingType.PHRASE_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == KeywordMatchingType.PHRASE_INDEXBASED) {
             query = buildPhraseQuery();
         }
-        if (this.predicate.getOperatorType() == KeywordMatchingType.SUBSTRING_SCANBASED) {
+        if (this.predicate.getKeywordMatchingType() == KeywordMatchingType.SUBSTRING_SCANBASED) {
             query = buildScanQuery();
         }
 

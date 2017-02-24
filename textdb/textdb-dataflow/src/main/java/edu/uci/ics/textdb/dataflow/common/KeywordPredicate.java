@@ -26,7 +26,8 @@ public class KeywordPredicate implements IPredicate {
     private HashSet<String> queryTokenSet;
     private ArrayList<String> queryTokensWithStopwords;
     private Analyzer luceneAnalyzer;
-    private KeywordMatchingType operatorType;
+    private KeywordMatchingType keywordMatchingType;
+    private String spanListName;
 
     /*
      * query refers to string of keywords to search for. For Ex. New york if
@@ -34,20 +35,26 @@ public class KeywordPredicate implements IPredicate {
      * searched in String field we search for Exact string.
      */
     public KeywordPredicate(String query, List<String> attributeNames, Analyzer luceneAnalyzer,
-            KeywordMatchingType operatorType) {
+            KeywordMatchingType keywordMatchingType) {
+        this(query, attributeNames, luceneAnalyzer, keywordMatchingType, null);
+    }
+    
+    public KeywordPredicate(String query, List<String> attributeNames, Analyzer luceneAnalyzer,
+            KeywordMatchingType keywordMatchingType, String spanListName) {
         this.query = query;
         this.queryTokenList = Utils.tokenizeQuery(luceneAnalyzer, query);
         this.queryTokenSet = new HashSet<>(this.queryTokenList);
         this.queryTokensWithStopwords = Utils.tokenizeQueryWithStopwords(query);
 
         this.attributeNames = attributeNames;
-        this.operatorType = operatorType;
+        this.keywordMatchingType = keywordMatchingType;
 
         this.luceneAnalyzer = luceneAnalyzer;
+        this.spanListName = spanListName;
     }
 
-    public KeywordMatchingType getOperatorType() {
-        return operatorType;
+    public KeywordMatchingType getKeywordMatchingType() {
+        return keywordMatchingType;
     }
 
     public String getQuery() {
@@ -76,6 +83,10 @@ public class KeywordPredicate implements IPredicate {
 
     public Analyzer getLuceneAnalyzer() {
         return luceneAnalyzer;
+    }
+    
+    public String getSpanListName() {
+        return this.spanListName;
     }
 
 }

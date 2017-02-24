@@ -14,20 +14,25 @@ public class DictionaryPredicate implements IPredicate {
     private Analyzer luceneAnalyzer;
     private List<String> attributeNames;
     private KeywordMatchingType keywordMatchingType;
+    private String spanListName;
 
     /*
      * dictionary refers to list of phrases to search for. For Ex. New York if
      * searched in TextField, we would consider both tokens New and York; if
      * searched in String field we search for Exact string.
      */
-
     public DictionaryPredicate(IDictionary dictionary, List<String> attributeNames, Analyzer luceneAnalyzer,
             KeywordMatchingType keywordMatchingType) {
-
+        this(dictionary, attributeNames, luceneAnalyzer, keywordMatchingType, null);
+    }
+    
+    public DictionaryPredicate(IDictionary dictionary, List<String> attributeNames, Analyzer luceneAnalyzer,
+            KeywordMatchingType keywordMatchingType, String spanListName) {
         this.dictionary = dictionary;
         this.luceneAnalyzer = luceneAnalyzer;
         this.attributeNames = attributeNames;
         this.keywordMatchingType = keywordMatchingType;
+        this.spanListName = spanListName;
     }
 
     public KeywordMatchingType getKeywordMatchingType() {
@@ -51,6 +56,10 @@ public class DictionaryPredicate implements IPredicate {
 
     public Analyzer getAnalyzer() {
         return luceneAnalyzer;
+    }
+    
+    public String getSpanListName() {
+        return this.spanListName;
     }
 
 }
