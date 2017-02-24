@@ -1,5 +1,7 @@
 package edu.uci.ics.textdb.web;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.api.plan.Plan;
@@ -10,6 +12,7 @@ import edu.uci.ics.textdb.web.healthcheck.SampleHealthCheck;
 import edu.uci.ics.textdb.web.request.beans.KeywordSourceBean;
 import edu.uci.ics.textdb.web.request.beans.NlpExtractorBean;
 import edu.uci.ics.textdb.web.request.beans.TupleStreamSinkBean;
+import edu.uci.ics.textdb.web.resource.PlanStoreResource;
 import edu.uci.ics.textdb.web.resource.QueryPlanResource;
 import edu.uci.ics.textdb.web.resource.SampleResource;
 import io.dropwizard.Application;
@@ -50,14 +53,27 @@ public class TextdbWebApplication extends Application<TextdbWebConfiguration> {
         final SampleResource sampleResource = new SampleResource();
         // Registers the SampleResource with Jersey
         environment.jersey().register(sampleResource);
+
         // Creates an instance of the QueryPlanResource class to register with Jersey
         final QueryPlanResource queryPlanResource = new QueryPlanResource();
         // Registers the QueryPlanResource with Jersey
         environment.jersey().register(queryPlanResource);
+
+
+        // Creates an instance of the QueryPlanResource class to register with Jersey
+        final PlanStoreResource planStoreResource = new PlanStoreResource();
+        // Registers the QueryPlanResource with Jersey
+        environment.jersey().register(planStoreResource);
+
         // Creates an instance of the HealthCheck and registers it with the environment
         final SampleHealthCheck sampleHealthCheck = new SampleHealthCheck();
         // Registering the SampleHealthCheck with the environment
         environment.healthChecks().register("sample", sampleHealthCheck);
+
+
+        // Configuring the object mapper used by Dropwizard
+        environment.getObjectMapper().configure(MapperFeature.USE_GETTERS_AS_SETTERS, false);
+        environment.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         
         // Enable CORS headers
         final FilterRegistration.Dynamic cors =
