@@ -3,11 +3,9 @@ package edu.uci.ics.textdb.plangen.operatorbuilder;
 import java.util.List;
 import java.util.Map;
 
-import edu.uci.ics.textdb.common.constants.LuceneAnalyzerConstants;
-import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
-import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
+import edu.uci.ics.textdb.dataflow.regexmatch.RegexPredicate;
 import edu.uci.ics.textdb.plangen.PlanGenUtils;
 
 /**
@@ -39,12 +37,8 @@ public class RegexMatcherBuilder {
 
         // build RegexMatcher
         RegexPredicate regexPredicate;
-        try {
-            regexPredicate = new RegexPredicate(regex, attributeNames,
-                    LuceneAnalyzerConstants.getNGramAnalyzer(3));
-        } catch (DataFlowException e) {
-            throw new PlanGenException(e.getMessage(), e);
-        }
+        regexPredicate = new RegexPredicate(regex, attributeNames);
+
         RegexMatcher regexMatcher = new RegexMatcher(regexPredicate);
 
         // set limit and offset

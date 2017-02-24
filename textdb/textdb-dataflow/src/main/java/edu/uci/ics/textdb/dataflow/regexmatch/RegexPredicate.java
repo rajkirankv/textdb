@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.dataflow.common;
+package edu.uci.ics.textdb.dataflow.regexmatch;
 
 import java.util.List;
 

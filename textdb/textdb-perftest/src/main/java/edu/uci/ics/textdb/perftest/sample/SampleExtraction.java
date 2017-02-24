@@ -19,17 +19,17 @@ import edu.uci.ics.textdb.common.field.DataTuple;
 import edu.uci.ics.textdb.common.field.StringField;
 import edu.uci.ics.textdb.common.field.TextField;
 import edu.uci.ics.textdb.common.utils.Utils;
-import edu.uci.ics.textdb.dataflow.common.IJoinPredicate;
-import edu.uci.ics.textdb.dataflow.common.JoinDistancePredicate;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
-import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
+import edu.uci.ics.textdb.dataflow.join.IJoinPredicate;
 import edu.uci.ics.textdb.dataflow.join.Join;
+import edu.uci.ics.textdb.dataflow.join.JoinDistancePredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcherSourceOperator;
+import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.nlpextrator.NlpExtractor;
 import edu.uci.ics.textdb.dataflow.nlpextrator.NlpPredicate;
 import edu.uci.ics.textdb.dataflow.projection.ProjectionOperator;
 import edu.uci.ics.textdb.dataflow.projection.ProjectionPredicate;
 import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
+import edu.uci.ics.textdb.dataflow.regexmatch.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.sink.FileSink;
 import edu.uci.ics.textdb.engine.Engine;
 import edu.uci.ics.textdb.perftest.promed.PromedSchema;
@@ -146,8 +146,7 @@ public class SampleExtraction {
         ProjectionOperator projectionOperatorIdAndContent2 = new ProjectionOperator(projectionPredicateIdAndContent);
 
         String regexPerson = "\\b(A|a|(an)|(An)) .{1,40} ((woman)|(man))\\b";
-        RegexPredicate regexPredicatePerson = new RegexPredicate(regexPerson, Arrays.asList(PromedSchema.CONTENT),
-                LuceneAnalyzerConstants.getNGramAnalyzer(3));
+        RegexPredicate regexPredicatePerson = new RegexPredicate(regexPerson, Arrays.asList(PromedSchema.CONTENT));
         RegexMatcher regexMatcherPerson = new RegexMatcher(regexPredicatePerson);
         
         NlpPredicate nlpPredicateLocation = new NlpPredicate(NlpPredicate.NlpTokenType.Location, Arrays.asList(PromedSchema.CONTENT));

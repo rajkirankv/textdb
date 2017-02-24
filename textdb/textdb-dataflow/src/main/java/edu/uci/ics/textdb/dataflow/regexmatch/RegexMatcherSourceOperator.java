@@ -1,5 +1,6 @@
 package edu.uci.ics.textdb.dataflow.regexmatch;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
@@ -11,7 +12,6 @@ import edu.uci.ics.textdb.common.constants.DataConstants;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.StorageException;
 import edu.uci.ics.textdb.dataflow.common.AbstractSingleInputOperator;
-import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
 import edu.uci.ics.textdb.storage.DataReader;
 import edu.uci.ics.textdb.storage.RelationManager;
 
@@ -28,7 +28,7 @@ public class RegexMatcherSourceOperator extends AbstractSingleInputOperator impl
         this.tableName = tableName;
         
         this.dataReader = RelationManager.getRelationManager().getTableDataReader(this.tableName, 
-                createLuceneQuery(this.predicate));
+                createLuceneQuery(this.predicate, RelationManager.getRelationManager().getTableAnalyzer(tableName)));
         
         regexMatcher = new RegexMatcher(this.predicate);
         regexMatcher.setInputOperator(dataReader);
@@ -55,7 +55,7 @@ public class RegexMatcherSourceOperator extends AbstractSingleInputOperator impl
     protected void cleanUp() throws TextDBException {
     }
     
-    public static Query createLuceneQuery(RegexPredicate predicate) throws DataFlowException {
+    public static Query createLuceneQuery(RegexPredicate predicate, Analyzer luceneAnalyzer) throws DataFlowException {
         Query luceneQuery;
         String queryString;
         
@@ -69,7 +69,7 @@ public class RegexMatcherSourceOperator extends AbstractSingleInputOperator impl
         // Try to parse the query string. It if fails, raise an exception.
         try {
             luceneQuery = new MultiFieldQueryParser(
-                    predicate.getAttributeNames().stream().toArray(String[]::new), predicate.getLuceneAnalyzer())
+                    predicate.getAttributeNames().stream().toArray(String[]::new), luceneAnalyzer)
                     .parse(queryString);
         } catch (ParseException e) {
             throw new DataFlowException(e);

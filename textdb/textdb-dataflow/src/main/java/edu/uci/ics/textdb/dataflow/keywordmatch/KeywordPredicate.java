@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.dataflow.common;
+package edu.uci.ics.textdb.dataflow.keywordmatch;
 
 import java.util.ArrayList;
 import java.util.HashSet;

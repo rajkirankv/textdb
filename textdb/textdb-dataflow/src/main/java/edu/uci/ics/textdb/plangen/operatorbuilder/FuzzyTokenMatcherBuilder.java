@@ -4,10 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import edu.uci.ics.textdb.common.constants.LuceneAnalyzerConstants;
-import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
-import edu.uci.ics.textdb.dataflow.common.FuzzyTokenPredicate;
 import edu.uci.ics.textdb.dataflow.fuzzytokenmatcher.FuzzyTokenMatcher;
+import edu.uci.ics.textdb.dataflow.fuzzytokenmatcher.FuzzyTokenPredicate;
 import edu.uci.ics.textdb.plangen.PlanGenUtils;
 
 /**
@@ -44,12 +43,9 @@ public class FuzzyTokenMatcherBuilder {
 
         // build FuzzyTokenMatcher
         FuzzyTokenPredicate fuzzyTokenPredicate;
-        try {
-            fuzzyTokenPredicate = new FuzzyTokenPredicate(query, attributeNames,
-                    LuceneAnalyzerConstants.getStandardAnalyzer(), thresholdRatioDouble);
-        } catch (DataFlowException e) {
-            throw new PlanGenException(e.getMessage(), e);
-        }
+        fuzzyTokenPredicate = new FuzzyTokenPredicate(query, attributeNames,
+                LuceneAnalyzerConstants.getStandardAnalyzer(), thresholdRatioDouble);
+
         FuzzyTokenMatcher fuzzyTokenMatcher = new FuzzyTokenMatcher(fuzzyTokenPredicate);
 
         // set limit and offset

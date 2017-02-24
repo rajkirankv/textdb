@@ -16,11 +16,10 @@ import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.StorageException;
 import edu.uci.ics.textdb.common.field.DataTuple;
 import edu.uci.ics.textdb.common.utils.Utils;
-import edu.uci.ics.textdb.dataflow.common.IJoinPredicate;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
-import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcherSourceOperator;
+import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.regexmatch.RegexMatcher;
+import edu.uci.ics.textdb.dataflow.regexmatch.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.source.ScanBasedSourceOperator;
 import edu.uci.ics.textdb.storage.DataWriter;
 import edu.uci.ics.textdb.storage.RelationManager;
@@ -127,8 +126,7 @@ public class JoinTestHelper {
     public static RegexMatcher getRegexMatcher(String tableName, String query, String attrName) {
         try {
             ScanBasedSourceOperator scanBasedSourceOperator = new ScanBasedSourceOperator(tableName);
-            RegexMatcher regexMatcher = new RegexMatcher(new RegexPredicate(query, Arrays.asList(attrName),
-                    LuceneAnalyzerConstants.getLuceneAnalyzer(LuceneAnalyzerConstants.nGramAnalyzerString(3))));
+            RegexMatcher regexMatcher = new RegexMatcher(new RegexPredicate(query, Arrays.asList(attrName)));
             regexMatcher.setInputOperator(scanBasedSourceOperator);
             return regexMatcher;
         } catch (DataFlowException e) {

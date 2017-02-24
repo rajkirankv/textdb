@@ -5,8 +5,8 @@ import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.uci.ics.textdb.dataflow.common.JoinDistancePredicate;
 import edu.uci.ics.textdb.dataflow.join.Join;
+import edu.uci.ics.textdb.dataflow.join.JoinDistancePredicate;
 import edu.uci.ics.textdb.dataflow.join.SimilarityJoinPredicate;
 
 public class JoinBuilderTest {

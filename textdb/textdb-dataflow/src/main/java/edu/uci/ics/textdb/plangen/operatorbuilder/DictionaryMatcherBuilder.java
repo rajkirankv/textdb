@@ -8,9 +8,9 @@ import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
 import edu.uci.ics.textdb.common.constants.LuceneAnalyzerConstants;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.PlanGenException;
-import edu.uci.ics.textdb.dataflow.common.Dictionary;
-import edu.uci.ics.textdb.dataflow.common.DictionaryPredicate;
+import edu.uci.ics.textdb.dataflow.dictionarymatcher.Dictionary;
 import edu.uci.ics.textdb.dataflow.dictionarymatcher.DictionaryMatcher;
+import edu.uci.ics.textdb.dataflow.dictionarymatcher.DictionaryPredicate;
 import edu.uci.ics.textdb.plangen.PlanGenUtils;
 
 /**

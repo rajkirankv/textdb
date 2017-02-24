@@ -9,7 +9,6 @@ import edu.uci.ics.textdb.api.dataflow.IOperator;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.ErrorMessages;
 import edu.uci.ics.textdb.api.exception.TextDBException;
-import edu.uci.ics.textdb.dataflow.common.IJoinPredicate;
 
 
 /**

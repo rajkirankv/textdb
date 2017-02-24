@@ -17,9 +17,8 @@ import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.field.Span;
 import edu.uci.ics.textdb.common.utils.Utils;
-import edu.uci.ics.textdb.dataflow.common.DictionaryPredicate;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordMatcherSourceOperator;
+import edu.uci.ics.textdb.dataflow.keywordmatch.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.source.ScanBasedSourceOperator;
 
 /**

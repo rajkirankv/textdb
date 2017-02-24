@@ -19,7 +19,6 @@ import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.field.Span;
 import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.common.AbstractSingleInputOperator;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 
 public class KeywordMatcher extends AbstractSingleInputOperator {
 

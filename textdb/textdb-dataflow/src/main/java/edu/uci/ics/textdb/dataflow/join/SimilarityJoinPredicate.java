@@ -14,7 +14,6 @@ import edu.uci.ics.textdb.common.field.DataTuple;
 import edu.uci.ics.textdb.common.field.IDField;
 import edu.uci.ics.textdb.common.field.ListField;
 import edu.uci.ics.textdb.common.field.Span;
-import edu.uci.ics.textdb.dataflow.common.IJoinPredicate;
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein;
 
 /**

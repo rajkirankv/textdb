@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.uci.ics.textdb.dataflow.common.Dictionary;
+import edu.uci.ics.textdb.dataflow.dictionarymatcher.Dictionary;
 
 /**
  * Created by shiladityasen on 4/30/16.

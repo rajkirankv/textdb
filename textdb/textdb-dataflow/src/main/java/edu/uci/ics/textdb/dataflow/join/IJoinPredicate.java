@@ -1,4 +1,4 @@
-package edu.uci.ics.textdb.dataflow.common;
+package edu.uci.ics.textdb.dataflow.join;
 
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;

@@ -9,7 +9,6 @@ import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.LuceneAnalyzerConstants;
 import edu.uci.ics.textdb.common.constants.TestConstants;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
-import edu.uci.ics.textdb.dataflow.common.RegexPredicate;
 import edu.uci.ics.textdb.dataflow.source.ScanBasedSourceOperator;
 import edu.uci.ics.textdb.dataflow.utils.TestUtils;
 import edu.uci.ics.textdb.storage.DataWriter;
@@ -133,8 +132,7 @@ public class RegexMatcherTestHelper {
             int limit, int offset) throws TextDBException {
         ScanBasedSourceOperator scanSource = new ScanBasedSourceOperator(tableName);
         
-        RegexPredicate regexPredicate = new RegexPredicate(regex, attributeNames, 
-                RelationManager.getRelationManager().getTableAnalyzer(tableName));
+        RegexPredicate regexPredicate = new RegexPredicate(regex, attributeNames);
         RegexMatcher regexMatcher = new RegexMatcher(regexPredicate);
         
         regexMatcher.setLimit(limit);
@@ -156,8 +154,7 @@ public class RegexMatcherTestHelper {
     
     public static List<ITuple> getRegexSourceResults(String tableName, String regex, List<String> attributeNames,
             int limit, int offset) throws TextDBException {
-        RegexPredicate regexPredicate = new RegexPredicate(regex, attributeNames, 
-                RelationManager.getRelationManager().getTableAnalyzer(tableName));
+        RegexPredicate regexPredicate = new RegexPredicate(regex, attributeNames);
         RegexMatcherSourceOperator regexSource = new RegexMatcherSourceOperator(regexPredicate, tableName);
         
         regexSource.setLimit(limit);
