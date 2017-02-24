@@ -1,27 +1,20 @@
 package edu.uci.ics.textdb.web.resource;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.uci.ics.textdb.api.common.ITuple;
-import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.api.plan.Plan;
-import edu.uci.ics.textdb.api.storage.IDataReader;
 import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.sink.TupleStreamSink;
 import edu.uci.ics.textdb.engine.Engine;
-import edu.uci.ics.textdb.planstore.PlanStore;
-import edu.uci.ics.textdb.planstore.PlanStoreConstants;
 import edu.uci.ics.textdb.web.request.QueryPlanRequest;
-import edu.uci.ics.textdb.web.request.beans.QueryPlanBean;
-import edu.uci.ics.textdb.web.response.QueryPlanResponse;
 import edu.uci.ics.textdb.web.response.SampleResponse;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -88,67 +81,5 @@ public class QueryPlanResource {
                     .header("Access-Control-Max-Age", "1728000")
                     .build();
         }
-    }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public QueryPlanResponse getQueryPlans() {
-        ArrayList<QueryPlanBean> queryPlans = new ArrayList<>();
-
-        try {
-            // Getting an iterator for the plan store
-            PlanStore planStore = PlanStore.getInstance();
-            planStore.createPlanStore();
-            IDataReader reader = planStore.getPlanIterator();
-            reader.open();
-
-            // ObjectMapper created for translating logical plan JSON to an object
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(MapperFeature.USE_GETTERS_AS_SETTERS, false);
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            // Iterating through the stored plans, and mapping them to a QueryPlanRequest object
-            ITuple tuple;
-            while ((tuple = reader.getNextTuple()) != null) {
-                String name = tuple.getField(PlanStoreConstants.NAME).getValue().toString();
-                String description = tuple.getField(PlanStoreConstants.DESCRIPTION).getValue().toString();
-                String logicalPlanJson = tuple.getField(PlanStoreConstants.LOGICAL_PLAN_JSON).getValue().toString();
-                queryPlans.add(new QueryPlanBean(name, description,
-                        mapper.readValue(logicalPlanJson, QueryPlanRequest.class)));
-            }
-        }
-        catch (TextDBException | IOException e) {
-            e.printStackTrace();
-        }
-
-        QueryPlanResponse queryPlanResponse = new QueryPlanResponse(queryPlans);
-        return queryPlanResponse;
-    }
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response addQueryPlan(String body) {
-        try {
-            // Getting an instance of PlanStore and creating a PlanStore if it doesn't already exist
-            PlanStore planStore = PlanStore.getInstance();
-            planStore.createPlanStore();
-
-            // ObjectMapper instance created to get Query Plan JSON string
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(MapperFeature.USE_GETTERS_AS_SETTERS, false);
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            // Adding the query plan to the PlanStore
-            QueryPlanBean queryPlanBean = objectMapper.readValue(body, QueryPlanBean.class);
-            planStore.addPlan(queryPlanBean.getName(), queryPlanBean.getDescription(),
-                     objectMapper.writeValueAsString(queryPlanBean.getQueryPlan()));
-        }
-        catch (TextDBException | IOException e) {
-            e.printStackTrace();
-            return Response.status(400).build();
-        }
-
-        return Response.status(200).build();
     }
 }
