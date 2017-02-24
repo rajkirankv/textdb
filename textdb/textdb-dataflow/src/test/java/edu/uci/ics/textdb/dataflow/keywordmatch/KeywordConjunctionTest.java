@@ -12,11 +12,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.uci.ics.textdb.api.common.Attribute;
+import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.IField;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
-import edu.uci.ics.textdb.common.constants.SchemaConstants;
 import edu.uci.ics.textdb.common.constants.TestConstants;
 import edu.uci.ics.textdb.common.constants.TestConstantsChinese;
 import edu.uci.ics.textdb.common.field.DataTuple;
@@ -41,6 +41,9 @@ public class KeywordConjunctionTest {
     public static final String PEOPLE_TABLE = KeywordTestHelper.PEOPLE_TABLE;
     public static final String MEDLINE_TABLE = KeywordTestHelper.MEDLINE_TABLE;
     public static final String CHINESE_TABLE = KeywordTestHelper.CHINESE_TABLE;
+    
+    public static final String SPAN_LIST_NAME = "keyword_conjunction_test_span_list";
+    public static final Attribute SPAN_LIST_ATTRIBUTE = new Attribute(SPAN_LIST_NAME, FieldType.LIST);
     
     public static final KeywordMatchingType conjunction = KeywordMatchingType.CONJUNCTION_INDEXBASED;
     
@@ -71,7 +74,7 @@ public class KeywordConjunctionTest {
         attributeNames.add(TestConstants.DESCRIPTION);
 
         // Perform the query
-        List<ITuple> results = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction);
+        List<ITuple> results = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME);
 
         // check the results
         Assert.assertEquals(0, results.size());
@@ -100,7 +103,7 @@ public class KeywordConjunctionTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("bruce"), new StringField("john Lee"), new IntegerField(46),
                 new DoubleField(5.50), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-14-1970")),
@@ -110,7 +113,7 @@ public class KeywordConjunctionTest {
         expectedResultList.add(tuple1);
 
         // Perform the query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME);
 
         // check the results
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -142,7 +145,7 @@ public class KeywordConjunctionTest {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
 
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("bruce"), new StringField("john Lee"), new IntegerField(46),
                 new DoubleField(5.50), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-14-1970")),
@@ -160,7 +163,7 @@ public class KeywordConjunctionTest {
         expectedResultList.add(tuple2);
 
         // Perform the query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME);
 
         // check the results
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -191,7 +194,7 @@ public class KeywordConjunctionTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -202,7 +205,7 @@ public class KeywordConjunctionTest {
         expectedResultList.add(tuple1);
 
         // Perform the query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME);
 
         // check the results
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -241,7 +244,7 @@ public class KeywordConjunctionTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -252,7 +255,7 @@ public class KeywordConjunctionTest {
         expectedResultList.add(tuple1);
 
         // Perform the query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME);
 
         // check the results
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -285,7 +288,7 @@ public class KeywordConjunctionTest {
         attributeNames.add(TestConstants.DESCRIPTION);
 
         // Perform the query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME);
 
         // Check the results
         Assert.assertEquals(0, resultList.size());
@@ -304,9 +307,10 @@ public class KeywordConjunctionTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, 3, 0);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(
+                PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME, 3, 0);
         List<ITuple> expectedList = new ArrayList<>();
 
         Span span1 = new Span("description", 5, 10, "angry", "Angry", 1);
@@ -346,8 +350,6 @@ public class KeywordConjunctionTest {
         expectedList.add(tuple2);
         expectedList.add(tuple3);
         expectedList.add(tuple4);
-
-        resultList = Utils.removeFields(resultList, SchemaConstants.PAYLOAD);
 
         Assert.assertEquals(expectedList.size(), 4);
         Assert.assertEquals(resultList.size(), 3);
@@ -366,9 +368,10 @@ public class KeywordConjunctionTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, conjunction, 3, 2);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(
+                PEOPLE_TABLE, query, attributeNames, conjunction, SPAN_LIST_NAME, 3, 2);
         List<ITuple> expectedList = new ArrayList<>();
 
         Span span1 = new Span("description", 5, 10, "angry", "Angry", 1);
@@ -408,8 +411,6 @@ public class KeywordConjunctionTest {
         expectedList.add(tuple2);
         expectedList.add(tuple3);
         expectedList.add(tuple4);
-
-        resultList = Utils.removeFields(resultList, SchemaConstants.PAYLOAD);
 
         Assert.assertEquals(expectedList.size(), 4);
         Assert.assertEquals(resultList.size(), 2);
@@ -442,7 +443,7 @@ public class KeywordConjunctionTest {
             schemaAttributes[count] = TestConstantsChinese.ATTRIBUTES_PEOPLE[count];
         }
 
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("无忌"), new StringField("长孙"), new IntegerField(46),
                 new DoubleField(5.50), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-14-1970")),
@@ -461,7 +462,7 @@ public class KeywordConjunctionTest {
 
         // Perform the query
         List<ITuple> resultList = KeywordTestHelper.getQueryResults(CHINESE_TABLE, query, attributeNames, 
-                conjunction, Integer.MAX_VALUE, 0);
+                conjunction, SPAN_LIST_NAME, Integer.MAX_VALUE, 0);
         
         // check the results
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -496,7 +497,7 @@ public class KeywordConjunctionTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("宋江"), new StringField("建筑"),
                 new IntegerField(42), new DoubleField(5.99),
@@ -509,7 +510,7 @@ public class KeywordConjunctionTest {
 
         // Perform the query
         List<ITuple> resultList = KeywordTestHelper.getQueryResults(CHINESE_TABLE, query, attributeNames, 
-                conjunction, Integer.MAX_VALUE, 0);
+                conjunction, SPAN_LIST_NAME, Integer.MAX_VALUE, 0);
 
         // check the results
         boolean contains = TestUtils.equals(expectedResultList, resultList);

@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;
@@ -19,7 +20,6 @@ import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.field.Span;
 import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.common.AbstractSingleInputOperator;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 
 public class KeywordMatcher extends AbstractSingleInputOperator {
 
@@ -38,8 +38,16 @@ public class KeywordMatcher extends AbstractSingleInputOperator {
         if (!inputSchema.containsField(SchemaConstants.PAYLOAD)) {
             outputSchema = Utils.addAttributeToSchema(outputSchema, SchemaConstants.PAYLOAD_ATTRIBUTE);
         }
-        if (!inputSchema.containsField(SchemaConstants.SPAN_LIST)) {
-            outputSchema = Utils.addAttributeToSchema(outputSchema, SchemaConstants.SPAN_LIST_ATTRIBUTE);
+        // if spanListName is specified, add the spanList field with the given spanListName
+        if (predicate.getSpanListName() != null) {
+            // check if the spanListName already exists in the current schema, duplicate attribute names are not allowed
+            if (outputSchema.containsField(predicate.getSpanListName())) {
+                throw new DataFlowException(String.format("spanListName %s already exists in inputSchema %s", 
+                        predicate.getSpanListName(), outputSchema.getAttributeNames().toString()));
+            } else {
+                outputSchema = Utils.addAttributeToSchema(outputSchema, 
+                        new Attribute(predicate.getSpanListName(), FieldType.LIST));
+            }
         }
     }
 
@@ -63,23 +71,24 @@ public class KeywordMatcher extends AbstractSingleInputOperator {
         ITuple resultTuple = null;
 
         // There's an implicit assumption that, in open() method, PAYLOAD is
-        // checked before SPAN_LIST.
+        // added before the spanList attribute.
         // Therefore, PAYLOAD needs to be checked and added first
         if (!inputSchema.containsField(SchemaConstants.PAYLOAD)) {
             inputTuple = Utils.getSpanTuple(inputTuple.getFields(),
                     Utils.generatePayloadFromTuple(inputTuple, predicate.getLuceneAnalyzer()), outputSchema);
         }
-        if (!inputSchema.containsField(SchemaConstants.SPAN_LIST)) {
+        // if spanList name is given, then add an empty span list field to tuple
+        if (predicate.getSpanListName() != null) {
             inputTuple = Utils.getSpanTuple(inputTuple.getFields(), new ArrayList<Span>(), outputSchema);
         }
 
-        if (this.predicate.getOperatorType() == DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == DataConstants.KeywordMatchingType.CONJUNCTION_INDEXBASED) {
             resultTuple = computeConjunctionMatchingResult(inputTuple);
         }
-        if (this.predicate.getOperatorType() == DataConstants.KeywordMatchingType.PHRASE_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == DataConstants.KeywordMatchingType.PHRASE_INDEXBASED) {
             resultTuple = computePhraseMatchingResult(inputTuple);
         }
-        if (this.predicate.getOperatorType() == DataConstants.KeywordMatchingType.SUBSTRING_SCANBASED) {
+        if (this.predicate.getKeywordMatchingType() == DataConstants.KeywordMatchingType.SUBSTRING_SCANBASED) {
             resultTuple = computeSubstringMatchingResult(inputTuple);
         }
 
@@ -128,9 +137,11 @@ public class KeywordMatcher extends AbstractSingleInputOperator {
         if (matchingResults.isEmpty()) {
             return null;
         }
-
-        List<Span> spanList = (List<Span>) sourceTuple.getField(SchemaConstants.SPAN_LIST).getValue();
-        spanList.addAll(matchingResults);
+        
+        if (predicate.getSpanListName() != null) {
+            List<Span> spanList = (List<Span>) sourceTuple.getField(predicate.getSpanListName()).getValue();
+            spanList.addAll(matchingResults);
+        }
 
         return sourceTuple;
     }
@@ -227,8 +238,10 @@ public class KeywordMatcher extends AbstractSingleInputOperator {
             return null;
         }
 
-        List<Span> spanList = (List<Span>) sourceTuple.getField(SchemaConstants.SPAN_LIST).getValue();
-        spanList.addAll(matchingResults);
+        if (predicate.getSpanListName() != null) {
+            List<Span> spanList = (List<Span>) sourceTuple.getField(predicate.getSpanListName()).getValue();
+            spanList.addAll(matchingResults);
+        }
 
         return sourceTuple;
     }
@@ -269,8 +282,10 @@ public class KeywordMatcher extends AbstractSingleInputOperator {
             return null;
         }
 
-        List<Span> spanList = (List<Span>) sourceTuple.getField(SchemaConstants.SPAN_LIST).getValue();
-        spanList.addAll(matchingResults);
+        if (predicate.getSpanListName() != null) {
+            List<Span> spanList = (List<Span>) sourceTuple.getField(predicate.getSpanListName()).getValue();
+            spanList.addAll(matchingResults);
+        }
 
         return sourceTuple;
     }

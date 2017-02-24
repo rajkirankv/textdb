@@ -20,7 +20,6 @@ import edu.uci.ics.textdb.common.exception.DataFlowException;
 import edu.uci.ics.textdb.common.exception.StorageException;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.dataflow.common.AbstractSingleInputOperator;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.storage.DataReader;
 import edu.uci.ics.textdb.storage.RelationManager;
 
@@ -118,13 +117,13 @@ public class KeywordMatcherSourceOperator extends AbstractSingleInputOperator im
      */
     private Query createLuceneQueryObject() throws DataFlowException {
         Query query = null;
-        if (this.predicate.getOperatorType() == KeywordMatchingType.CONJUNCTION_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == KeywordMatchingType.CONJUNCTION_INDEXBASED) {
             query = buildConjunctionQuery();
         }
-        if (this.predicate.getOperatorType() == KeywordMatchingType.PHRASE_INDEXBASED) {
+        if (this.predicate.getKeywordMatchingType() == KeywordMatchingType.PHRASE_INDEXBASED) {
             query = buildPhraseQuery();
         }
-        if (this.predicate.getOperatorType() == KeywordMatchingType.SUBSTRING_SCANBASED) {
+        if (this.predicate.getKeywordMatchingType() == KeywordMatchingType.SUBSTRING_SCANBASED) {
             query = buildScanQuery();
         }
 

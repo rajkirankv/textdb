@@ -45,7 +45,7 @@ public class KeywordMatcherBuilderTest {
         Assert.assertEquals(
                 zikaAttrList,
                 keywordZika.getPredicate().getAttributeNames());
-        Assert.assertEquals(KeywordMatchingType.CONJUNCTION_INDEXBASED, keywordZika.getPredicate().getOperatorType());
+        Assert.assertEquals(KeywordMatchingType.CONJUNCTION_INDEXBASED, keywordZika.getPredicate().getKeywordMatchingType());
         Assert.assertEquals(Integer.MAX_VALUE, keywordZika.getLimit());
         Assert.assertEquals(0, keywordZika.getOffset());
         
@@ -76,7 +76,7 @@ public class KeywordMatcherBuilderTest {
         Assert.assertEquals(
                 irvineAttrList,
                 keywordIrvine.getPredicate().getAttributeNames());
-        Assert.assertEquals(KeywordMatchingType.SUBSTRING_SCANBASED, keywordIrvine.getPredicate().getOperatorType());
+        Assert.assertEquals(KeywordMatchingType.SUBSTRING_SCANBASED, keywordIrvine.getPredicate().getKeywordMatchingType());
         Assert.assertEquals(10, keywordIrvine.getLimit());
         Assert.assertEquals(2, keywordIrvine.getOffset());     
     }

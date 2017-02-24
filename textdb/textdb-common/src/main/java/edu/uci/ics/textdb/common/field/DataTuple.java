@@ -17,12 +17,15 @@ public class DataTuple implements ITuple {
 
     public DataTuple(Schema schema, IField... fields) {
         this.schema = schema;
-        // Converting to java.util.Arrays.ArrayList
-        // so that the collection remains static and cannot be extended/shrunk
-        // This makes List<IField> partially immutable.
-        // Partial because we can still replace an element at particular index.
         this.fields = Arrays.asList(fields);
     }
+    
+    public DataTuple(Schema schema, List<IField> fields) {
+        this.schema = schema;
+        this.fields = fields;
+    }
+    
+    
 
     @Override
     public IField getField(int index) {

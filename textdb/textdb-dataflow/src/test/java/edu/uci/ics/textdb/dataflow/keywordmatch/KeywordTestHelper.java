@@ -3,6 +3,8 @@ package edu.uci.ics.textdb.dataflow.keywordmatch;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.uci.ics.textdb.api.common.Attribute;
+import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
@@ -10,7 +12,6 @@ import edu.uci.ics.textdb.common.constants.LuceneAnalyzerConstants;
 import edu.uci.ics.textdb.common.constants.TestConstants;
 import edu.uci.ics.textdb.common.constants.TestConstantsChinese;
 import edu.uci.ics.textdb.common.exception.DataFlowException;
-import edu.uci.ics.textdb.dataflow.common.KeywordPredicate;
 import edu.uci.ics.textdb.dataflow.source.ScanBasedSourceOperator;
 import edu.uci.ics.textdb.dataflow.utils.TestUtils;
 import edu.uci.ics.textdb.storage.DataWriter;
@@ -77,19 +78,19 @@ public class KeywordTestHelper {
     }
     
     public static List<ITuple> getQueryResults(String tableName, String keywordQuery, List<String> attributeNames,
-            KeywordMatchingType matchingType) throws TextDBException {
-        return getQueryResults(tableName, keywordQuery, attributeNames, matchingType, Integer.MAX_VALUE, 0);
+            KeywordMatchingType matchingType, String spanListName) throws TextDBException {
+        return getQueryResults(tableName, keywordQuery, attributeNames, matchingType, spanListName, Integer.MAX_VALUE, 0);
     }
     
     public static List<ITuple> getQueryResults(String tableName, String keywordQuery, List<String> attributeNames,
-            KeywordMatchingType matchingType, int limit, int offset) throws TextDBException {
+            KeywordMatchingType matchingType, String spanListName, int limit, int offset) throws TextDBException {
         
         // results from a scan on the table followed by a keyword match
         List<ITuple> scanSourceResults = getScanSourceResults(tableName, keywordQuery, attributeNames,
-                matchingType, limit, offset);
+                matchingType, spanListName, limit, offset);
         // results from index-based keyword search on the table
         List<ITuple> keywordSourceResults = getKeywordSourceResults(tableName, keywordQuery, attributeNames,
-                matchingType, limit, offset);
+                matchingType, spanListName, limit, offset);
         
         // if limit and offset are not relevant, the results from scan source and keyword source must be the same
         if (limit == Integer.MAX_VALUE && offset == 0) {
@@ -103,7 +104,7 @@ public class KeywordTestHelper {
         // in this case, we get all the results and test if the whole result set contains both results
         else {
             List<ITuple> allResults = getKeywordSourceResults(tableName, keywordQuery, attributeNames,
-                    matchingType, Integer.MAX_VALUE, 0);
+                    matchingType, spanListName, Integer.MAX_VALUE, 0);
             
             if (scanSourceResults.size() == keywordSourceResults.size() &&
                     TestUtils.containsAll(allResults, scanSourceResults) && 
@@ -116,13 +117,13 @@ public class KeywordTestHelper {
     }
     
     public static List<ITuple> getScanSourceResults(String tableName, String keywordQuery, List<String> attributeNames,
-            KeywordMatchingType matchingType, int limit, int offset) throws TextDBException {
+            KeywordMatchingType matchingType, String spanListName, int limit, int offset) throws TextDBException {
         RelationManager relationManager = RelationManager.getRelationManager();
         
         ScanBasedSourceOperator scanSource = new ScanBasedSourceOperator(tableName);
         
         KeywordPredicate keywordPredicate = new KeywordPredicate(
-                keywordQuery, attributeNames, relationManager.getTableAnalyzer(tableName), matchingType);
+                keywordQuery, attributeNames, relationManager.getTableAnalyzer(tableName), matchingType, spanListName);
         KeywordMatcher keywordMatcher = new KeywordMatcher(keywordPredicate);
         keywordMatcher.setLimit(limit);
         keywordMatcher.setOffset(offset);
@@ -142,10 +143,10 @@ public class KeywordTestHelper {
     }
     
     public static List<ITuple> getKeywordSourceResults(String tableName, String keywordQuery, List<String> attributeNames,
-            KeywordMatchingType matchingType, int limit, int offset) throws TextDBException {
+            KeywordMatchingType matchingType, String spanListName, int limit, int offset) throws TextDBException {
         RelationManager relationManager = RelationManager.getRelationManager();
         KeywordPredicate keywordPredicate = new KeywordPredicate(
-                keywordQuery, attributeNames, relationManager.getTableAnalyzer(tableName), matchingType);
+                keywordQuery, attributeNames, relationManager.getTableAnalyzer(tableName), matchingType, spanListName);
         KeywordMatcherSourceOperator keywordSource = new KeywordMatcherSourceOperator(
                 keywordPredicate, tableName);
         keywordSource.setLimit(limit);

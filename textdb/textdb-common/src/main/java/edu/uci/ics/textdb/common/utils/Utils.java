@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.exception.StorageException;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -28,8 +27,6 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexableField;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONStringer;
-import org.json.JSONWriter;
 
 import edu.uci.ics.textdb.api.common.Attribute;
 import edu.uci.ics.textdb.api.common.FieldType;
@@ -157,6 +154,17 @@ public class Utils {
 
         IField[] fieldsDuplicate = fieldListDuplicate.toArray(new IField[fieldListDuplicate.size()]);
         return new DataTuple(spanSchema, fieldsDuplicate);
+    }
+    
+    public static ITuple addFieldToTuple(ITuple tuple, Schema newSchema, IField... newFields) {
+        return addFieldToTuple(tuple, newSchema, Arrays.asList(newFields));
+    }
+    
+    public static ITuple addFieldToTuple(ITuple tuple, Schema newSchema, List<IField> newFields) {
+        ArrayList<IField> newTupleFields = new ArrayList<>();
+        newTupleFields.addAll(tuple.getFields());
+        newTupleFields.addAll(newFields);
+        return new DataTuple(newSchema, newTupleFields);
     }
     
     /**
