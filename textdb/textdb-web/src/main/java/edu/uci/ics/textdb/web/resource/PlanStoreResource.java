@@ -9,13 +9,14 @@ import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.api.storage.IDataReader;
 import edu.uci.ics.textdb.planstore.PlanStore;
 import edu.uci.ics.textdb.planstore.PlanStoreConstants;
+import edu.uci.ics.textdb.web.TextdbWebException;
 import edu.uci.ics.textdb.web.request.QueryPlanRequest;
 import edu.uci.ics.textdb.web.request.beans.QueryPlanBean;
 import edu.uci.ics.textdb.web.response.QueryPlanResponse;
+import edu.uci.ics.textdb.web.response.SampleResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -36,6 +37,7 @@ public class PlanStoreResource {
             mapper = new ObjectMapper();
             mapper.configure(MapperFeature.USE_GETTERS_AS_SETTERS, false);
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            planStore.createPlanStore();
         }
         catch (TextDBException e) {
             e.printStackTrace();
@@ -61,10 +63,12 @@ public class PlanStoreResource {
                         mapper.readValue(logicalPlanJson, QueryPlanRequest.class)));
             }
         }
-        catch (TextDBException | IOException e) {
+        catch(TextDBException e) {
+            throw new TextdbWebException(e.getMessage());
+        }
+        catch(IOException e) {
             e.printStackTrace();
         }
-
         QueryPlanResponse queryPlanResponse = new QueryPlanResponse(queryPlans);
         return queryPlanResponse;
     }
@@ -74,57 +78,63 @@ public class PlanStoreResource {
     public QueryPlanBean getQueryPlan(@PathParam("plan_name") String planName) {
         try {
             ITuple tuple = planStore.getPlan(planName);
+            if(tuple == null) {
+                throw new TextdbWebException("Plan with the given name does not exist");
+            }
             QueryPlanBean queryPlanBean = new QueryPlanBean(tuple.getField(PlanStoreConstants.NAME).getValue().toString(),
                     tuple.getField(PlanStoreConstants.DESCRIPTION).getValue().toString(),
                     mapper.readValue(tuple.getField(PlanStoreConstants.LOGICAL_PLAN_JSON).getValue().toString(), QueryPlanRequest.class));
             return queryPlanBean;
         }
-        catch (TextDBException | IOException e) {
+        catch(TextDBException e) {
+            throw new TextdbWebException(e.getMessage());
+        }
+        catch(IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     @POST
-    public Response addQueryPlan(QueryPlanBean queryPlanBean) {
+    public SampleResponse addQueryPlan(QueryPlanBean queryPlanBean) {
         try {
             // Adding the query plan to the PlanStore
             planStore.addPlan(queryPlanBean.getName(), queryPlanBean.getDescription(),
                     mapper.writeValueAsString(queryPlanBean.getQueryPlan()));
         }
-        catch (TextDBException | IOException e) {
-            e.printStackTrace();
-            return Response.status(400).build();
+        catch(TextDBException e) {
+            throw new TextdbWebException(e.getMessage());
         }
-
-        return Response.status(200).build();
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        return new SampleResponse(0, "Success");
     }
 
     @DELETE
     @Path("/{plan_name}")
-    public Response deleteQueryPlan(@PathParam("plan_name") String planName) {
+    public SampleResponse deleteQueryPlan(@PathParam("plan_name") String planName) {
         try {
             // Deleting the plan from the plan store
             planStore.deletePlan(planName);
         }
         catch(TextDBException e) {
-            e.printStackTrace();
-            return Response.status(400).build();
+            throw new TextdbWebException(e.getMessage());
         }
-        return Response.status(200).build();
+        return new SampleResponse(0, "Success");
     }
 
     @PUT
     @Path("/{plan_name}")
-    public Response updateQueryPlan(@PathParam("plan_name") String planName, QueryPlanBean queryPlanBean) {
+    public SampleResponse updateQueryPlan(@PathParam("plan_name") String planName, QueryPlanBean queryPlanBean) {
         try {
             // Updating the plan in the plan store
             planStore.updatePlan(planName, queryPlanBean.getDescription(),
                     mapper.writeValueAsString(queryPlanBean.getQueryPlan()));
         }
         catch(JsonProcessingException | TextDBException e) {
-            return Response.status(400).build();
+            throw new TextdbWebException(e.getMessage());
         }
-        return Response.status(200).build();
+        return new SampleResponse(0, "Success");
     }
 }
