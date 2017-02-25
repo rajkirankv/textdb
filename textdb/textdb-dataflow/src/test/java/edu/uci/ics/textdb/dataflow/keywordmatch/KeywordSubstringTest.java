@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.uci.ics.textdb.api.common.Attribute;
+import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.IField;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;
@@ -34,6 +35,9 @@ public class KeywordSubstringTest {
 
     public static final String PEOPLE_TABLE = KeywordTestHelper.PEOPLE_TABLE;
     public static final String MEDLINE_TABLE = KeywordTestHelper.MEDLINE_TABLE;
+    
+    public static final String SPAN_LIST_NAME = "keyword_substring_test_span_list";
+    public static final Attribute SPAN_LIST_ATTRIBUTE = new Attribute(SPAN_LIST_NAME, FieldType.LIST);
     
     public static final KeywordMatchingType substring = KeywordMatchingType.SUBSTRING_SCANBASED;
     
@@ -64,7 +68,8 @@ public class KeywordSubstringTest {
         attributeNames.add(TestConstants.DESCRIPTION);
 
         // Perform Query
-        List<ITuple> results = KeywordTestHelper.getScanSourceResults(PEOPLE_TABLE, query, attributeNames, substring, Integer.MAX_VALUE, 0);
+        List<ITuple> results = KeywordTestHelper.getScanSourceResults(
+                PEOPLE_TABLE, query, attributeNames, substring, SPAN_LIST_NAME, Integer.MAX_VALUE, 0);
 
         // Perform Check
         Assert.assertEquals(0, results.size());
@@ -94,7 +99,7 @@ public class KeywordSubstringTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -105,7 +110,8 @@ public class KeywordSubstringTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getScanSourceResults(PEOPLE_TABLE, query, attributeNames, substring, Integer.MAX_VALUE, 0);
+        List<ITuple> resultList = KeywordTestHelper.getScanSourceResults(
+                PEOPLE_TABLE, query, attributeNames, substring, SPAN_LIST_NAME, Integer.MAX_VALUE, 0);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -137,7 +143,7 @@ public class KeywordSubstringTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -148,7 +154,8 @@ public class KeywordSubstringTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getScanSourceResults(PEOPLE_TABLE, query, attributeNames, substring, Integer.MAX_VALUE, 0);
+        List<ITuple> resultList = KeywordTestHelper.getScanSourceResults(
+                PEOPLE_TABLE, query, attributeNames, substring, SPAN_LIST_NAME, Integer.MAX_VALUE, 0);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -182,7 +189,7 @@ public class KeywordSubstringTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -193,7 +200,8 @@ public class KeywordSubstringTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getScanSourceResults(PEOPLE_TABLE, query, attributeNames, substring, Integer.MAX_VALUE, 0);
+        List<ITuple> resultList = KeywordTestHelper.getScanSourceResults(
+                PEOPLE_TABLE, query, attributeNames, substring, SPAN_LIST_NAME, Integer.MAX_VALUE, 0);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);

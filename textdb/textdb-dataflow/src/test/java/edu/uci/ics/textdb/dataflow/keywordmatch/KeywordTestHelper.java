@@ -3,8 +3,6 @@ package edu.uci.ics.textdb.dataflow.keywordmatch;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.uci.ics.textdb.api.common.Attribute;
-import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.exception.TextDBException;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;

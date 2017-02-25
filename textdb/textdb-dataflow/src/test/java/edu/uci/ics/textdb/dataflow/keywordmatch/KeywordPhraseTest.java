@@ -10,10 +10,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.uci.ics.textdb.api.common.Attribute;
+import edu.uci.ics.textdb.api.common.FieldType;
 import edu.uci.ics.textdb.api.common.IField;
 import edu.uci.ics.textdb.api.common.ITuple;
 import edu.uci.ics.textdb.api.common.Schema;
-import edu.uci.ics.textdb.common.constants.SchemaConstants;
 import edu.uci.ics.textdb.common.constants.TestConstants;
 import edu.uci.ics.textdb.common.constants.DataConstants.KeywordMatchingType;
 import edu.uci.ics.textdb.common.field.DataTuple;
@@ -34,6 +34,9 @@ public class KeywordPhraseTest {
 
     public static final String PEOPLE_TABLE = KeywordTestHelper.PEOPLE_TABLE;
     public static final String MEDLINE_TABLE = KeywordTestHelper.MEDLINE_TABLE;
+    
+    public static final String SPAN_LIST_NAME = "keyword_phrase_test_span_list";
+    public static final Attribute SPAN_LIST_ATTRIBUTE = new Attribute(SPAN_LIST_NAME, FieldType.LIST);
     
     public static final KeywordMatchingType phrase = KeywordMatchingType.PHRASE_INDEXBASED;
     
@@ -63,7 +66,7 @@ public class KeywordPhraseTest {
         attributeNames.add(TestConstants.DESCRIPTION);
 
         // Perform Query
-        List<ITuple> results = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase);
+        List<ITuple> results = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
 
         // Perform Check
         Assert.assertEquals(0, results.size());
@@ -93,7 +96,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -104,7 +107,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -139,7 +142,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -150,7 +153,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -182,7 +185,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -193,7 +196,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -225,7 +228,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = TestConstants.ATTRIBUTES_PEOPLE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new StringField("george lin lin"), new StringField("lin clooney"), new IntegerField(43),
                 new DoubleField(6.06), new DateField(new SimpleDateFormat("MM-dd-yyyy").parse("01-13-1973")),
@@ -236,7 +239,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
 
         // Perform Query
-        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase);
+        List<ITuple> resultList = KeywordTestHelper.getQueryResults(PEOPLE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, resultList);
@@ -267,7 +270,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = keywordTestConstants.ATTRIBUTES_MEDLINE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields1 = { new IntegerField(14347980), new TextField(""),
                 new TextField("CHRONIC MENINGOCOCCEMIA; EPIDEMIOLOGY, DIAGNOSIS AND TREATMENT."),
@@ -287,7 +290,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
         
         List<ITuple> results = KeywordTestHelper.getQueryResults(
-                MEDLINE_TABLE, query, attributeNames, phrase);
+                MEDLINE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
 
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, results);
@@ -319,7 +322,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = keywordTestConstants.ATTRIBUTES_MEDLINE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields = { new IntegerField(17832788), new TextField(""), new TextField("Cosmic X-ray Sources."),
                 new TextField("S Bowyer, E T Byram, T A Chubb, H Friedman"), new StringField("147-3656 Jan 22, 1965"),
@@ -334,7 +337,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
 
         List<ITuple> results = KeywordTestHelper.getQueryResults(
-                MEDLINE_TABLE, query, attributeNames, phrase);
+                MEDLINE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
         
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, results);
@@ -366,7 +369,7 @@ public class KeywordPhraseTest {
         for (int count = 0; count < schemaAttributes.length - 1; count++) {
             schemaAttributes[count] = keywordTestConstants.ATTRIBUTES_MEDLINE[count];
         }
-        schemaAttributes[schemaAttributes.length - 1] = SchemaConstants.SPAN_LIST_ATTRIBUTE;
+        schemaAttributes[schemaAttributes.length - 1] = SPAN_LIST_ATTRIBUTE;
 
         IField[] fields = { new IntegerField(4566015), new TextField(""),
                 new TextField("Significance of milk pH in newborn infants."), new TextField("V C Harrison, G Peat"),
@@ -391,7 +394,7 @@ public class KeywordPhraseTest {
         expectedResultList.add(tuple1);
 
         List<ITuple> results = KeywordTestHelper.getQueryResults(
-                MEDLINE_TABLE, query, attributeNames, phrase);
+                MEDLINE_TABLE, query, attributeNames, phrase, SPAN_LIST_NAME);
         
         // Perform Check
         boolean contains = TestUtils.equals(expectedResultList, results);

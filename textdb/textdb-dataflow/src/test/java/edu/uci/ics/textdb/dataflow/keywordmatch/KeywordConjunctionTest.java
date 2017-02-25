@@ -27,7 +27,6 @@ import edu.uci.ics.textdb.common.field.ListField;
 import edu.uci.ics.textdb.common.field.Span;
 import edu.uci.ics.textdb.common.field.StringField;
 import edu.uci.ics.textdb.common.field.TextField;
-import edu.uci.ics.textdb.common.utils.Utils;
 import edu.uci.ics.textdb.dataflow.utils.TestUtils;
 
 /**
